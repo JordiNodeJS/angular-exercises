@@ -36,17 +36,24 @@ angular-exercises/
 - Ruta en disco: `--project-root=chapters/01-fundamentos/01-hola-mundo`.
 - Una sola instalación: `pnpm`, nunca `npm`.
 
+## Reglas para asistentes (IA)
+
+- **`AGENTS.md`** (raíz): reglas duras del repo — solo pnpm, prohibido `ng new`, verificación con build, convenciones de Angular 22 y formato de commits.
+- **`.opencode/skills/new-angular-exercise/`**: skill que crea un ejercicio con el nombre y `--project-root` correctos, compila, borra el `.gitkeep` y actualiza la tabla de progreso.
+
+OpenCode las carga solo al abrir esta carpeta como workspace.
+
 ## Estado
 
 Workspace ya creado y con dependencias instaladas:
 
-| Pieza | Versión |
-| --- | --- |
-| Angular CLI | 22.2.7 |
-| Angular | 22.2.6 |
-| TypeScript | 6.0.3 |
-| Node.js | 24.x |
-| pnpm | 11.21.0 |
+| Pieza       | Versión |
+| ----------- | ------- |
+| Angular CLI | 22.2.7  |
+| Angular     | 22.2.6  |
+| TypeScript  | 6.0.3   |
+| Node.js     | 24.x    |
+| pnpm        | 11.21.0 |
 
 - Store de pnpm: `G:\.pnpm-store\v11` (los paquetes se enlazan, no se copian).
 - `angular.json` tiene `newProjectRoot: "chapters"`.
@@ -75,22 +82,22 @@ pnpm exec ng serve ch01-01-hola-mundo
 
 ## Progreso
 
-| Capítulo | Ejercicio | Estado |
-| --- | --- | --- |
-| 01 Fundamentos | 01-hola-mundo | Sin empezar |
-| 01 Fundamentos | 02-templates | Sin empezar |
-| 01 Fundamentos | 03-control-flow | Sin empezar |
-| 01 Fundamentos | 04-pipes | Sin empezar |
-| 02 Estado y datos | 01-signals | Sin empezar |
-| 02 Estado y datos | 02-servicios-di | Sin empezar |
-| 02 Estado y datos | 03-http | Sin empezar |
-| 02 Estado y datos | 04-rxjs | Sin empezar |
-| 03 Routing y forms | 01-router | Sin empezar |
-| 03 Routing y forms | 02-lazy-loading | Sin empezar |
-| 03 Routing y forms | 03-guards | Sin empezar |
+| Capítulo           | Ejercicio         | Estado      |
+| ------------------ | ----------------- | ----------- |
+| 01 Fundamentos     | 01-hola-mundo     | Sin empezar |
+| 01 Fundamentos     | 02-templates      | Sin empezar |
+| 01 Fundamentos     | 03-control-flow   | Sin empezar |
+| 01 Fundamentos     | 04-pipes          | Sin empezar |
+| 02 Estado y datos  | 01-signals        | Sin empezar |
+| 02 Estado y datos  | 02-servicios-di   | Sin empezar |
+| 02 Estado y datos  | 03-http           | Sin empezar |
+| 02 Estado y datos  | 04-rxjs           | Sin empezar |
+| 03 Routing y forms | 01-router         | Sin empezar |
+| 03 Routing y forms | 02-lazy-loading   | Sin empezar |
+| 03 Routing y forms | 03-guards         | Sin empezar |
 | 03 Routing y forms | 04-reactive-forms | Sin empezar |
-| 04 Calidad | 01-testing | Sin empezar |
-| 04 Calidad | 02-build | Sin empezar |
-| 04 Calidad | 03-ssr | Sin empezar |
+| 04 Calidad         | 01-testing        | Sin empezar |
+| 04 Calidad         | 02-build          | Sin empezar |
+| 04 Calidad         | 03-ssr            | Sin empezar |
 
 Plan completo: Notion → Self-Taught → "Angular — Roadmap y tutorial".
