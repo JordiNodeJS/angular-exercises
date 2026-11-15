@@ -39,7 +39,7 @@ angular-exercises/
 ## Reglas para asistentes (IA)
 
 - **`AGENTS.md`** (raíz): reglas duras del repo — solo pnpm, prohibido `ng new`, verificación con build, convenciones de Angular 22 y formato de commits.
-- **`.opencode/skills/new-angular-exercise/`**: skill que crea un ejercicio con el nombre y `--project-root` correctos, compila, borra el `.gitkeep` y actualiza la tabla de progreso.
+- **`.opencode/skills/new-angular-exercise/`**: skill que crea un ejercicio con el nombre y `--project-root` correctos, compila, borra el `.gitkeep` y actualiza el progreso (README + Notion).
 
 OpenCode las carga solo al abrir esta carpeta como workspace.
 

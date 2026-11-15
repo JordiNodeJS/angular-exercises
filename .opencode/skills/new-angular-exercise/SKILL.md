@@ -36,7 +36,7 @@ pnpm exec ng generate application ch02-03-http \
 1. Borra `chapters/<capítulo>/<ejercicio>/.gitkeep`.
 2. Compila: `pnpm exec ng build ch02-03-http`.
 3. Formatea: `pnpm exec prettier --write "chapters/<capítulo>/<ejercicio>/**/*.{ts,html,css}"`.
-4. Marca el ejercicio como `En progreso` en la tabla de progreso de `README.md`.
+4. Marca el ejercicio como `En progreso` en la tabla de progreso de `README.md` y en su fila de la base de datos `Roadmap Angular` de Notion (`collection://419f4dc3-b462-814c-9ab4-000bbe4beb0e`, buscando por `Tema`).
 5. Commit: `feat(ch02-03): scaffold del ejercicio`.
 
 ## 5. Reportar

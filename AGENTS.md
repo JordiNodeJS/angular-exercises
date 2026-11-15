@@ -58,6 +58,24 @@ El nombre del proyecto no puede llevar `/`.
 
 No digas que algo funciona sin haber ejecutado el build.
 
+## Notion: mantener el plan actualizado
+
+El plan de estudio vive en Notion y debe reflejar el estado real del repo. En cada sesión que avance un ejercicio, sincroniza:
+
+- Página: `Angular — Roadmap y tutorial` → https://app.notion.com/p/419f4dc3b4628118a6e7d6dae18ab1c1
+- Base de datos: `Roadmap Angular` → `collection://419f4dc3-b462-814c-9ab4-000bbe4beb0e`
+
+Reglas:
+
+1. Ejercicio empezado → su fila pasa a `En progreso`. Localízala por el campo `Tema`, no por la posición.
+2. Ejercicio terminado **y verificado** (build + prettier) → `Listo`. Sin verificación, no se marca.
+3. `README.md` y Notion deben contar lo mismo. Si discrepan, manda el código: actualiza ambos en el mismo turno.
+4. Solo `Estado` es de actualización libre. No cambies filas, `Etapa`, `Orden` ni el texto de `Que practicar` sin pedirlo.
+5. No toques Notion por cambios triviales (formato, renombres internos, pruebas que no cierran el ejercicio).
+6. Si la herramienta de Notion no está disponible, dilo y deja el cambio pendiente. Nunca afirmes que actualizaste algo que no actualizaste.
+
+Herramientas: `notion-query-data-sources` para localizar la fila y `notion-update-page` con `command: "update_properties"`.
+
 ## Git
 
 - Rama principal `main`. Rama corta por capítulo solo para experimentos; merge con `--no-ff`.
