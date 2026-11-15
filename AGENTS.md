@@ -74,7 +74,17 @@ Reglas:
 5. No toques Notion por cambios triviales (formato, renombres internos, pruebas que no cierran el ejercicio).
 6. Si la herramienta de Notion no está disponible, dilo y deja el cambio pendiente. Nunca afirmes que actualizaste algo que no actualizaste.
 
-Herramientas: `notion-query-data-sources` para localizar la fila y `notion-update-page` con `command: "update_properties"`.
+Herramientas: MCP local `notion-local` (integración **OpenCode MCP**; el MCP remoto `notion` está desactivado).
+
+- `API-query-data-source` para leer las filas de `collection://419f4dc3-b462-814c-9ab4-000bbe4beb0e`.
+- `API-patch-page` con `properties` para cambiar el `Status` de la fila localizada por `Topic`.
+
+### Límites y buenas prácticas
+
+- El MCP local **no** tiene la cuota de herramienta del MCP alojado: no existe `usage_limit_reached` ni el cooldown de ~60 minutos.
+- Sí aplican los límites de la API de Notion: 180 req/min por conexión y ~3 req/s al consultar un data source. Ante un 429, respetar `Retry-After` y no reintentar en bucle.
+- No hay `mode: "view"` ni SQL. Para leer, `API-query-data-source`; para renombrar columnas, `API-update-a-data-source` (conserva los valores). Nunca redefinir opciones de un `select`/`status` para renombrarlas.
+- Una sola consulta por tanda: leer todas las filas, actualizar en memoria y verificar con `API-retrieve-a-page` de la fila tocada en vez de re-consultar la base entera.
 
 ## Git
 
