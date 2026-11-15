@@ -85,20 +85,20 @@ pnpm exec ng serve ch01-01-hello-world
 
 | Capítulo         | Ejercicio         | Estado      |
 | ---------------- | ----------------- | ----------- |
-| 01-fundamentals  | 01-hello-world    | Sin empezar |
-| 01-fundamentals  | 02-templates      | Sin empezar |
-| 01-fundamentals  | 03-control-flow   | Sin empezar |
-| 01-fundamentals  | 04-pipes          | Sin empezar |
-| 02-state-data    | 01-signals        | Sin empezar |
-| 02-state-data    | 02-services-di    | Sin empezar |
-| 02-state-data    | 03-http           | Sin empezar |
-| 02-state-data    | 04-rxjs           | Sin empezar |
-| 03-routing-forms | 01-router         | Sin empezar |
-| 03-routing-forms | 02-lazy-loading   | Sin empezar |
-| 03-routing-forms | 03-guards         | Sin empezar |
-| 03-routing-forms | 04-reactive-forms | Sin empezar |
-| 04-quality       | 01-testing        | Sin empezar |
-| 04-quality       | 02-build          | Sin empezar |
-| 04-quality       | 03-ssr            | Sin empezar |
+| 01-fundamentals  | 01-hello-world    | Not started |
+| 01-fundamentals  | 02-templates      | Not started |
+| 01-fundamentals  | 03-control-flow   | Not started |
+| 01-fundamentals  | 04-pipes          | Not started |
+| 02-state-data    | 01-signals        | Not started |
+| 02-state-data    | 02-services-di    | Not started |
+| 02-state-data    | 03-http           | Not started |
+| 02-state-data    | 04-rxjs           | Not started |
+| 03-routing-forms | 01-router         | Not started |
+| 03-routing-forms | 02-lazy-loading   | Not started |
+| 03-routing-forms | 03-guards         | Not started |
+| 03-routing-forms | 04-reactive-forms | Not started |
+| 04-quality       | 01-testing        | Not started |
+| 04-quality       | 02-build          | Not started |
+| 04-quality       | 03-ssr            | Not started |
 
 Plan completo: Notion → Self-Taught → "Angular — Roadmap y tutorial".

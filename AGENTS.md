@@ -67,8 +67,8 @@ El plan de estudio vive en Notion y debe reflejar el estado real del repo. En ca
 
 Reglas:
 
-1. Ejercicio empezado → su fila pasa a `En progreso`. Localízala por el campo `Tema`, no por la posición.
-2. Ejercicio terminado **y verificado** (build + prettier) → `Listo`. Sin verificación, no se marca.
+1. Ejercicio empezado → su fila pasa a `In progress`. Localízala por el campo `Tema`, no por la posición.
+2. Ejercicio terminado **y verificado** (build + prettier) → `Done`. Sin verificación, no se marca. Los estados van en inglés: `Not started` → `In progress` → `Done`.
 3. `README.md` y Notion deben contar lo mismo. Si discrepan, manda el código: actualiza ambos en el mismo turno.
 4. Solo `Estado` es de actualización libre. No cambies filas, `Etapa`, `Orden` ni el texto de `Que practicar` sin pedirlo.
 5. No toques Notion por cambios triviales (formato, renombres internos, pruebas que no cierran el ejercicio).
