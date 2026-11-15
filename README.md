@@ -7,14 +7,14 @@ Repo de ejercicios de Angular. Un único workspace, un único `node_modules` (pn
 ```
 angular-exercises/
 ├── chapters/
-│   ├── 01-fundamentos/
-│   │   ├── 01-hola-mundo/
+│   ├── 01-fundamentals/
+│   │   ├── 01-hello-world/
 │   │   ├── 02-templates/
 │   │   ├── 03-control-flow/
 │   │   └── 04-pipes/
-│   ├── 02-estado-datos/
+│   ├── 02-state-data/
 │   │   ├── 01-signals/
-│   │   ├── 02-servicios-di/
+│   │   ├── 02-services-di/
 │   │   ├── 03-http/
 │   │   └── 04-rxjs/
 │   ├── 03-routing-forms/
@@ -22,7 +22,7 @@ angular-exercises/
 │   │   ├── 02-lazy-loading/
 │   │   ├── 03-guards/
 │   │   └── 04-reactive-forms/
-│   └── 04-calidad/
+│   └── 04-quality/
 │       ├── 01-testing/
 │       ├── 02-build/
 │       └── 03-ssr/
@@ -32,8 +32,9 @@ angular-exercises/
 ## Convenciones
 
 - Capítulos y ejercicios con dos dígitos: orden alfabético = orden del plan.
-- Nombre del proyecto Angular: `ch01-01-hola-mundo` (sin `/`, no permitido).
-- Ruta en disco: `--project-root=chapters/01-fundamentos/01-hola-mundo`.
+- Nombres de carpetas **en inglés**, kebab-case: `01-fundamentals`, `01-hello-world`.
+- Nombre del proyecto Angular: `ch01-01-hello-world` (sin `/`, no permitido).
+- Ruta en disco: `--project-root=chapters/01-fundamentals/01-hello-world`.
 - Una sola instalación: `pnpm`, nunca `npm`.
 
 ## Reglas para asistentes (IA)
@@ -69,11 +70,11 @@ pnpm exec ng version
 ## Añadir un ejercicio
 
 ```bash
-pnpm exec ng generate application ch01-01-hola-mundo \
-  --project-root=chapters/01-fundamentos/01-hola-mundo \
+pnpm exec ng generate application ch01-01-hello-world \
+  --project-root=chapters/01-fundamentals/01-hello-world \
   --minimal --style=css
 
-pnpm exec ng serve ch01-01-hola-mundo
+pnpm exec ng serve ch01-01-hello-world
 ```
 
 - `--minimal` evita tests: úsalo salvo en el capítulo de testing.
@@ -82,22 +83,22 @@ pnpm exec ng serve ch01-01-hola-mundo
 
 ## Progreso
 
-| Capítulo           | Ejercicio         | Estado      |
-| ------------------ | ----------------- | ----------- |
-| 01 Fundamentos     | 01-hola-mundo     | Sin empezar |
-| 01 Fundamentos     | 02-templates      | Sin empezar |
-| 01 Fundamentos     | 03-control-flow   | Sin empezar |
-| 01 Fundamentos     | 04-pipes          | Sin empezar |
-| 02 Estado y datos  | 01-signals        | Sin empezar |
-| 02 Estado y datos  | 02-servicios-di   | Sin empezar |
-| 02 Estado y datos  | 03-http           | Sin empezar |
-| 02 Estado y datos  | 04-rxjs           | Sin empezar |
-| 03 Routing y forms | 01-router         | Sin empezar |
-| 03 Routing y forms | 02-lazy-loading   | Sin empezar |
-| 03 Routing y forms | 03-guards         | Sin empezar |
-| 03 Routing y forms | 04-reactive-forms | Sin empezar |
-| 04 Calidad         | 01-testing        | Sin empezar |
-| 04 Calidad         | 02-build          | Sin empezar |
-| 04 Calidad         | 03-ssr            | Sin empezar |
+| Capítulo         | Ejercicio         | Estado      |
+| ---------------- | ----------------- | ----------- |
+| 01-fundamentals  | 01-hello-world    | Sin empezar |
+| 01-fundamentals  | 02-templates      | Sin empezar |
+| 01-fundamentals  | 03-control-flow   | Sin empezar |
+| 01-fundamentals  | 04-pipes          | Sin empezar |
+| 02-state-data    | 01-signals        | Sin empezar |
+| 02-state-data    | 02-services-di    | Sin empezar |
+| 02-state-data    | 03-http           | Sin empezar |
+| 02-state-data    | 04-rxjs           | Sin empezar |
+| 03-routing-forms | 01-router         | Sin empezar |
+| 03-routing-forms | 02-lazy-loading   | Sin empezar |
+| 03-routing-forms | 03-guards         | Sin empezar |
+| 03-routing-forms | 04-reactive-forms | Sin empezar |
+| 04-quality       | 01-testing        | Sin empezar |
+| 04-quality       | 02-build          | Sin empezar |
+| 04-quality       | 03-ssr            | Sin empezar |
 
 Plan completo: Notion → Self-Taught → "Angular — Roadmap y tutorial".

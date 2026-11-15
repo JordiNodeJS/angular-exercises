@@ -9,9 +9,10 @@ description: Añade un ejercicio Angular a chapters/ con el nombre, project-root
 
 ## 1. Confirmar datos
 
-- Capítulo y ejercicio, por ejemplo `02-estado-datos` / `03-http`.
+- Capítulo y ejercicio, por ejemplo `02-state-data` / `03-http`.
 - Nombre del proyecto: `ch02-03-http`.
-- Ruta: `chapters/02-estado-datos/03-http`.
+- Ruta: `chapters/02-state-data/03-http`.
+- Nombres de carpeta **en inglés**, kebab-case (`01-fundamentals`, `01-hello-world`).
 
 Comprueba que:
 
@@ -27,7 +28,7 @@ Comprueba que:
 
 ```bash
 pnpm exec ng generate application ch02-03-http \
-  --project-root=chapters/02-estado-datos/03-http \
+  --project-root=chapters/02-state-data/03-http \
   --style=css --minimal
 ```
 

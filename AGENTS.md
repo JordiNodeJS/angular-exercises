@@ -25,14 +25,14 @@ angular.json                       → fuente de verdad de los proyectos
 
 ## Nombres
 
-| Cosa             | Formato                           | Ejemplo                            |
-| ---------------- | --------------------------------- | ---------------------------------- |
-| Capítulo         | `NN-slug`                         | `02-estado-datos`                  |
-| Ejercicio        | `NN-slug`                         | `03-http`                          |
-| Proyecto Angular | `ch<NN>-<NN>-<slug>`              | `ch02-03-http`                     |
-| Project root     | `chapters/<capítulo>/<ejercicio>` | `chapters/02-estado-datos/03-http` |
+| Cosa             | Formato                           | Ejemplo                          |
+| ---------------- | --------------------------------- | -------------------------------- |
+| Capítulo         | `NN-slug` (inglés)                | `02-state-data`                  |
+| Ejercicio        | `NN-slug` (inglés)                | `03-http`                        |
+| Proyecto Angular | `ch<NN>-<NN>-<slug>`              | `ch02-03-http`                   |
+| Project root     | `chapters/<capítulo>/<ejercicio>` | `chapters/02-state-data/03-http` |
 
-El nombre del proyecto no puede llevar `/`.
+El nombre del proyecto no puede llevar `/`. Las carpetas se nombran **siempre en inglés** (`01-fundamentals`, `02-state-data`); el texto de la documentación va en español.
 
 ## Convenciones de código (Angular 22)
 
