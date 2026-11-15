@@ -83,7 +83,7 @@ pnpm exec ng serve ch01-01-hello-world
 
 ## Progreso
 
-| Capítulo         | Ejercicio         | Estado      |
+| Chapter          | Exercise          | Status      |
 | ---------------- | ----------------- | ----------- |
 | 01-fundamentals  | 01-hello-world    | Not started |
 | 01-fundamentals  | 02-templates      | Not started |
