@@ -1,15 +1,19 @@
 :root {
-  --bg: #fbfaf7;
-  --panel: #ffffff;
-  --fg: #1f2328;
-  --muted: #5b6672;
-  --border: #e2dfd8;
-  --accent: #c3002f;
-  --accent-soft: #fdeef1;
-  --code-bg: #f4f2ed;
-  --ok: #14764a;
-  --warn: #8a5a00;
-  --warn-soft: #fdf4e0;
+  color-scheme: dark;
+  --bg: #14171b;
+  --panel: #1b1f25;
+  --fg: #dfe3e8;
+  --muted: #9aa4b1;
+  --border: #2c333c;
+  --accent: #ff6b85;
+  --accent-soft: #2a1d22;
+  --code-bg: #101317;
+  --ok: #4ec38a;
+  --warn: #e8b64c;
+  --warn-soft: #241f12;
+  --note-border: #4a2a33;
+  --warn-border: #4a3f1e;
+  --warn-fg: #efdcb0;
 }
 
 * {
@@ -158,13 +162,13 @@ li {
 
 .note {
   background: var(--accent-soft);
-  border: 1px solid #f3cfd8;
+  border: 1px solid var(--note-border);
 }
 
 .warn {
   background: var(--warn-soft);
-  border: 1px solid #eddfb8;
-  color: #4a3a12;
+  border: 1px solid var(--warn-border);
+  color: var(--warn-fg);
 }
 
 .note p:first-child,
@@ -295,8 +299,25 @@ footer {
 }
 
 @media print {
+  :root {
+    color-scheme: light;
+    --bg: #ffffff;
+    --panel: #ffffff;
+    --fg: #1f2328;
+    --muted: #5b6672;
+    --border: #d8d5cf;
+    --accent: #c3002f;
+    --accent-soft: #fdeef1;
+    --code-bg: #f4f2ed;
+    --ok: #14764a;
+    --warn: #8a5a00;
+    --warn-soft: #fdf4e0;
+    --note-border: #f3cfd8;
+    --warn-border: #eddfb8;
+    --warn-fg: #4a3a12;
+  }
+
   body {
-    background: #fff;
     padding: 0;
     font-size: 11pt;
   }
