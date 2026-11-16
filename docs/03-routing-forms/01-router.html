@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>01-router · Rutas y navegación</title>
+    <link rel="stylesheet" href="../assets/lesson.css" />
+  </head>
+  <body>
+    <main>
+      <div class="topbar">
+        <nav>
+          <a href="../index.html">← Índice de clases</a>
+          <a href="https://angular.dev/guide/routing">Docs: routing</a>
+        </nav>
+        <span class="crumb">Capítulo 03 · Routing &amp; Forms</span>
+      </div>
+
+      <h1>01 · Router: rutas, parámetros y redirecciones</h1>
+      <p class="lede">
+        Una app con varias pantallas y una URL que las describe. Sin NgModules: rutas en un array y
+        <code>provideRouter</code>.
+      </p>
+
+      <ul class="chips">
+        <li class="chip chip--accent">Proyecto: ch03-01-router</li>
+        <li class="chip">Ruta: chapters/03-routing-forms/01-router</li>
+        <li class="chip">Requiere: capítulo 02</li>
+      </ul>
+
+      <div class="objective">
+        <strong>Objetivo de la clase</strong>
+        <p>
+          Rutas, parámetros, <code>routerLink</code> y redirecciones. Al terminar, la URL manda
+          sobre la vista y los parámetros llegan al componente como inputs.
+        </p>
+      </div>
+
+      <h2>1. Configurar el router</h2>
+      <pre><code>// app.routes.ts
+import { Routes } from '@angular/router';
+
+export const routes: Routes = [
+  { path: '', redirectTo: 'inicio', pathMatch: 'full' },
+  { path: 'inicio', component: Inicio },
+  { path: 'productos', component: Productos },
+  { path: 'productos/:id', component: ProductoDetalle },
+  { path: '**', component: NoEncontrado },
+];</code></pre>
+      <pre><code>// app.config.ts
+providers: [provideRouter(routes, withComponentInputBinding())];</code></pre>
+      <p>
+        <code>withComponentInputBinding()</code> hace que <code>:id</code> llegue como
+        <code>input()</code>. Es la forma recomendada: el componente no necesita
+        <code>ActivatedRoute</code> para leer parámetros.
+      </p>
+
+      <h2>2. El outlet y los enlaces</h2>
+      <pre><code>&lt;nav&gt;
+  &lt;a routerLink="/inicio" routerLinkActive="activo"&gt;Inicio&lt;/a&gt;
+  &lt;a routerLink="/productos" routerLinkActive="activo"&gt;Productos&lt;/a&gt;
+&lt;/nav&gt;
+
+&lt;router-outlet /&gt;</code></pre>
+      <ul class="check">
+        <li><code>routerLink</code> en vez de <code>href</code>: no recarga la página.</li>
+        <li><code>routerLinkActive</code> añade la clase cuando la ruta está activa.</li>
+        <li>
+          Para una coincidencia exacta: <code>[routerLinkActiveOptions]="{ exact: true }"</code>.
+        </li>
+      </ul>
+
+      <h2>3. Parámetros</h2>
+      <pre><code>// producto-detalle.ts
+export class ProductoDetalle {
+  readonly id = input.required&lt;string&gt;();
+}</code></pre>
+      <pre><code>&lt;a [routerLink]="['/productos', producto.id]"&gt;{{ producto.nombre }}&lt;/a&gt;</code></pre>
+      <p>
+        El input se actualiza si navegas de <code>/productos/1</code> a
+        <code>/productos/2</code> sin salir del componente. Con
+        <code>ActivatedRoute.snapshot</code> ese cambio se te escaparía.
+      </p>
+
+      <h2>4. Navegar desde código</h2>
+      <pre><code>private readonly router = inject(Router);
+
+irAlDetalle(id: string): void {
+  this.router.navigate(['/productos', id]);
+}</code></pre>
+      <p>
+        Para el caso normal, un <code>routerLink</code> es mejor: es accesible, soporta abrir en
+        pestaña nueva y no depende de código.
+      </p>
+
+      <h2>5. Redirecciones y comodín</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Ruta</th>
+            <th>Efecto</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>''</code> + <code>pathMatch: 'full'</code></td>
+            <td>
+              Redirige solo la URL vacía. Sin <code>full</code>, todo empieza por <code>''</code>.
+            </td>
+          </tr>
+          <tr>
+            <td><code>'**'</code></td>
+            <td>Comodín. Debe ir la última.</td>
+          </tr>
+          <tr>
+            <td><code>redirectTo: 'inicio'</code></td>
+            <td>Cambia la URL en el navegador, no solo la vista.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="warn">
+        <p>
+          El orden importa: el router gana con la <strong>primera</strong> ruta que encaja. Una ruta
+          con comodín antes de las demás se come la app y no da error.
+        </p>
+      </div>
+
+      <h2>6. Ejercicio</h2>
+      <ol class="steps">
+        <li>Crea tres rutas: inicio, lista y detalle con <code>:id</code>. Comodín a una 404.</li>
+        <li>
+          Añade <code>withComponentInputBinding()</code> y lee el <code>id</code> con
+          <code>input.required&lt;string&gt;()</code>.
+        </li>
+        <li>
+          Navega del detalle 1 al 2 sin volver a la lista y comprueba que el componente se actualiza
+          (o se recrea, si el input cambia de ruta).
+        </li>
+        <li>
+          Marca el enlace activo con <code>routerLinkActive</code> y estilízalo con un binding de
+          clase.
+        </li>
+        <li>
+          Escribe a mano <code>/no-existe</code> en la barra de direcciones y comprueba que la 404
+          sale sin recargar.
+        </li>
+      </ol>
+
+      <h2>Checklist de cierre</h2>
+      <ul class="check">
+        <li>
+          <code>pnpm exec ng serve ch03-01-router</code> arranca y navega sin errores en consola.
+        </li>
+        <li>Build y prettier limpios.</li>
+        <li>Ningún <code>href</code> interno: todo <code>routerLink</code>.</li>
+        <li>La ruta comodín está al final y la redirección tiene <code>pathMatch</code>.</li>
+      </ul>
+
+      <nav class="lesson-nav">
+        <a href="../02-state-data/04-rxjs.html"><span class="dir">Anterior</span>← 02-04 · RxJS</a>
+        <a href="02-lazy-loading.html"><span class="dir">Siguiente</span>02 · Lazy loading →</a>
+      </nav>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>04-pipes · Pipes y directivas de atributo</title>
+    <link rel="stylesheet" href="../assets/lesson.css" />
+  </head>
+  <body>
+    <main>
+      <div class="topbar">
+        <nav>
+          <a href="../index.html">← Índice de clases</a>
+          <a href="https://angular.dev/guide/templates/pipes">Docs: pipes</a>
+        </nav>
+        <span class="crumb">Capítulo 01 · Fundamentals</span>
+      </div>
+
+      <h1>04 · Pipes y directivas de atributo</h1>
+      <p class="lede">
+        Formatear sin ensuciar el componente y añadir comportamiento a un elemento existente sin
+        crear un componente nuevo.
+      </p>
+
+      <ul class="chips">
+        <li class="chip chip--accent">Proyecto: ch01-04-pipes</li>
+        <li class="chip">Ruta: chapters/01-fundamentals/04-pipes</li>
+        <li class="chip">Requiere: 02-templates</li>
+      </ul>
+
+      <div class="objective">
+        <strong>Objetivo de la clase</strong>
+        <p>
+          <code>date</code>, <code>currency</code>, <code>async</code> y una directiva de atributo
+          propia. Además: cuándo un pipe es una mala idea.
+        </p>
+      </div>
+
+      <h2>1. Pipes incluidos</h2>
+      <p>
+        Se importan sueltos desde <code>@angular/common</code>, nunca vía <code>CommonModule</code>.
+      </p>
+      <pre><code>import { CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
+
+@Component({
+  imports: [CurrencyPipe, DatePipe, DecimalPipe],
+  /* ... */
+})</code></pre>
+      <pre><code>{{ fecha() | date: 'dd/MM/yyyy' }}
+{{ precio() | currency: 'EUR' : 'symbol' : '1.2-2' }}
+{{ ratio() | number: '1.1-2' }}
+{{ titulo() | titlecase }}
+{{ textoLargo() | slice: 0 : 80 }}</code></pre>
+      <table>
+        <thead>
+          <tr>
+            <th>Pipe</th>
+            <th>Nota</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>date</code></td>
+            <td>Acepta <code>Date</code>, número (ms) o string ISO.</td>
+          </tr>
+          <tr>
+            <td><code>currency</code></td>
+            <td>Depende del locale activo. Por defecto, <code>en-US</code>.</td>
+          </tr>
+          <tr>
+            <td><code>decimal</code></td>
+            <td>El formato <code>1.2-2</code> es «mínimo 1 entero, 2 decimales».</td>
+          </tr>
+          <tr>
+            <td><code>json</code></td>
+            <td>Solo para depurar. Fuera del código final.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Locale en español</h3>
+      <pre><code>// app.config.ts
+import { registerLocaleData } from '@angular/common';
+import localeEs from '@angular/common/locales/es';
+
+registerLocaleData(localeEs);
+
+export const appConfig: ApplicationConfig = {
+  providers: [{ provide: LOCALE_ID, useValue: 'es-ES' }],
+};</code></pre>
+      <p>
+        Sin esto, <code>currency: 'EUR'</code> escribe <code>€1,234.50</code> en vez de
+        <code>1.234,50 €</code>. El import del locale pesa: solo se añade cuando el ejercicio lo
+        necesita.
+      </p>
+
+      <h2>2. <code>async</code>: el pipe que casi no hace falta</h2>
+      <pre><code>{{ usuarios$ | async }}</code></pre>
+      <p>
+        Se suscribe, entrega el último valor y se desuscribe al destruir el componente. Sigue siendo
+        válido, pero en este repo el estado se modela con signals: si el dato llega como
+        <code>Observable</code>, conviértelo en el borde con <code>toSignal()</code> y usa
+        <code>@if</code> / <code>@for</code> en la plantilla.
+      </p>
+      <pre><code>readonly usuarios = toSignal(this.http.get&lt;Usuario[]&gt;('/api/usuarios'), {
+  initialValue: [] as Usuario[],
+});</code></pre>
+
+      <h2>3. Un pipe propio</h2>
+      <pre><code>import { Pipe, PipeTransform } from '@angular/core';
+
+@Pipe({ name: 'truncar' })
+export class TruncarPipe implements PipeTransform {
+  transform(valor: string, max = 40): string {
+    return valor.length &gt; max ? `${valor.slice(0, max).trimEnd()}…` : valor;
+  }
+}</code></pre>
+      <pre><code>{{ descripcion() | truncar: 60 }}</code></pre>
+      <div class="warn">
+        <p>
+          Los pipes son <strong>puros</strong> por defecto: solo se recalculan si cambia la
+          referencia de entrada. Si el pipe recibe un objeto que mutas, no se refresca. Y no pongas
+          una llamada HTTP dentro de un pipe: se ejecutaría en cada ciclo de detección.
+        </p>
+      </div>
+
+      <h2>4. Directivas de atributo</h2>
+      <p>
+        Una directiva es un componente sin plantilla: cambia el elemento donde se aplica. Se declara
+        con <code>@Directive</code>, <code>input()</code> para parámetros y <code>host</code> para
+        tocar el elemento. Prohibido <code>@HostBinding</code> / <code>@HostListener</code>.
+      </p>
+      <pre><code>import { Directive, input } from '@angular/core';
+
+@Directive({
+  selector: '[appResaltar]',
+  host: {
+    '[style.backgroundColor]': 'color()',
+    '(mouseenter)': 'activo.set(true)',
+    '(mouseleave)': 'activo.set(false)',
+    '[class.resaltado]': 'activo()',
+  },
+})
+export class ResaltarDirective {
+  readonly color = input('khaki', { alias: 'appResaltar' });
+  protected readonly activo = signal(false);
+}</code></pre>
+      <pre><code>&lt;p appResaltar="lightblue"&gt;Pasa el ratón&lt;/p&gt;</code></pre>
+      <p>
+        El alias permite escribir <code>appResaltar="lightblue"</code> en vez de
+        <code>[appResaltar]="..."</code> con otro input. Si la directiva no se importa en el
+        componente, el atributo se ignora en silencio.
+      </p>
+
+      <h2>5. Pipes frente a computed</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Situación</th>
+            <th>Herramienta</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Formato de presentación (fecha, moneda, número)</td>
+            <td>Pipe</td>
+          </tr>
+          <tr>
+            <td>Transformación de datos con lógica de negocio</td>
+            <td><code>computed()</code> en el componente</td>
+          </tr>
+          <tr>
+            <td>Mismo formato repetido en 5 plantillas</td>
+            <td>Pipe propio</td>
+          </tr>
+          <tr>
+            <td>Filtrar u ordenar una lista</td>
+            <td><code>computed()</code>, no pipe</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>6. Ejercicio</h2>
+      <ol class="steps">
+        <li>
+          Configura el locale <code>es-ES</code> y muestra un precio con <code>currency</code> y una
+          fecha con <code>date</code>. Comprueba antes y después del cambio.
+        </li>
+        <li>
+          Crea el pipe <code>truncar</code> con un segundo parámetro opcional y úsalo en una
+          tarjeta.
+        </li>
+        <li>
+          Crea una directiva <code>appResaltar</code> con color por input y estado
+          <em>hover</em> aplicado con <code>host</code>.
+        </li>
+        <li>
+          Aplica la directiva a tres elementos con colores distintos y comprueba que no necesita
+          <code>@HostListener</code>.
+        </li>
+        <li>
+          Cambia un <code>computed()</code> que formateaba a mano por el pipe equivalente, y al
+          contrario: mueve un filtro de un pipe (si lo has escrito) a <code>computed()</code>.
+        </li>
+      </ol>
+
+      <h2>Checklist de cierre</h2>
+      <ul class="check">
+        <li>Build y prettier limpios.</li>
+        <li>Ningún <code>CommonModule</code>: solo los pipes que se usan.</li>
+        <li>La directiva usa <code>host</code>, no decoradores de host.</li>
+        <li>Ningún pipe hace peticiones ni muta estado.</li>
+      </ul>
+
+      <nav class="lesson-nav">
+        <a href="03-control-flow.html"><span class="dir">Anterior</span>← 03 · Control flow</a>
+        <a href="../index.html"><span class="dir">Fin del capítulo</span>Volver al índice</a>
+      </nav>
+    </main>
+  </body>
+</html>

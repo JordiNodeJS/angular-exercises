@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>03-http · HttpClient y httpResource</title>
+    <link rel="stylesheet" href="../assets/lesson.css" />
+  </head>
+  <body>
+    <main>
+      <div class="topbar">
+        <nav>
+          <a href="../index.html">← Índice de clases</a>
+          <a href="https://angular.dev/guide/http">Docs: HTTP client</a>
+        </nav>
+        <span class="crumb">Capítulo 02 · State &amp; Data</span>
+      </div>
+
+      <h1>03 · HTTP tipado y <code>httpResource</code></h1>
+      <p class="lede">
+        Pedir datos a una API sin <code>any</code>, modelar carga y error, y elegir entre
+        <code>HttpClient</code> con Observables o <code>httpResource</code> con signals.
+      </p>
+
+      <ul class="chips">
+        <li class="chip chip--accent">Proyecto: ch02-03-http</li>
+        <li class="chip">Ruta: chapters/02-state-data/03-http</li>
+        <li class="chip">Requiere: 02-02-services-di</li>
+      </ul>
+
+      <div class="objective">
+        <strong>Objetivo de la clase</strong>
+        <p>
+          <code>provideHttpClient</code>, <code>HttpClient</code> tipado y manejo de errores. Como
+          extra, <code>httpResource</code>, estable desde Angular 22.
+        </p>
+      </div>
+
+      <h2>1. Configurar el cliente</h2>
+      <pre><code>// app.config.ts
+import { provideHttpClient, withFetch } from '@angular/common/http';
+
+export const appConfig: ApplicationConfig = {
+  providers: [provideBrowserGlobalErrorListeners(), provideRouter(routes), provideHttpClient(withFetch())],
+};</code></pre>
+      <p>
+        Sin <code>provideHttpClient()</code> cualquier <code>inject(HttpClient)</code> falla en
+        runtime. <code>withFetch()</code> usa la Fetch API en vez de <code>XMLHttpRequest</code>.
+      </p>
+
+      <h2>2. Un servicio tipado</h2>
+      <pre><code>export interface Usuario {
+  id: number;
+  nombre: string;
+  email: string;
+}
+
+@Service()
+export class UsuariosService {
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = inject(API_URL);
+
+  listar(): Observable&lt;Usuario[]&gt; {
+    return this.http.get&lt;Usuario[]&gt;(`${this.apiUrl}/usuarios`);
+  }
+
+  detalle(id: number): Observable&lt;Usuario&gt; {
+    return this.http.get&lt;Usuario&gt;(`${this.apiUrl}/usuarios/${id}`);
+  }
+}</code></pre>
+      <div class="warn">
+        <p>
+          El genérico de <code>get&lt;T&gt;</code> no valida nada: es una promesa de tipos, no un
+          parser. Si la API devuelve otra forma, TypeScript no se enterará. Valida en el borde si el
+          dato es crítico.
+        </p>
+      </div>
+
+      <h2>3. Errores</h2>
+      <pre><code>import { catchError, throwError } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+
+listar(): Observable&lt;Usuario[]&gt; {
+  return this.http.get&lt;Usuario[]&gt;(`${this.apiUrl}/usuarios`).pipe(
+    catchError((error: HttpErrorResponse) =&gt;
+      throwError(() =&gt; new Error(`No se pudo cargar la lista (${error.status})`)),
+    ),
+  );
+}</code></pre>
+      <p>
+        <code>HttpClient</code> emite error para cualquier estado fuera de 2xx (y para fallos de
+        red, donde <code>status</code> es 0). El componente no debería conocer
+        <code>HttpErrorResponse</code>: tradúcelo en el servicio.
+      </p>
+
+      <h2>4. <code>httpResource</code>: la vía reactiva</h2>
+      <p>
+        En lugar de suscribirte, describes la petición como una función de signals. Cambia el signal
+        de entrada y la petición se relanza.
+      </p>
+      <pre><code>import { httpResource } from '@angular/common/http';
+
+readonly usuarioId = signal(1);
+
+readonly usuario = httpResource&lt;Usuario&gt;(
+  () =&gt; `${this.apiUrl}/usuarios/${this.usuarioId()}`,
+);</code></pre>
+      <pre><code>@if (usuario.isLoading()) {
+  &lt;app-spinner /&gt;
+} @else if (usuario.error()) {
+  &lt;p&gt;No se pudo cargar.&lt;/p&gt;
+} @else if (usuario.value(); as u) {
+  &lt;h2&gt;{{ u.nombre }}&lt;/h2&gt;
+}</code></pre>
+      <table>
+        <thead>
+          <tr>
+            <th>Señal</th>
+            <th>Qué da</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>value()</code></td>
+            <td>Último valor válido o <code>undefined</code>.</td>
+          </tr>
+          <tr>
+            <td><code>status()</code></td>
+            <td>
+              <code>idle</code> · <code>loading</code> · <code>error</code> ·
+              <code>reloading</code>…
+            </td>
+          </tr>
+          <tr>
+            <td><code>isLoading()</code>, <code>error()</code></td>
+            <td>Atajos para la plantilla.</td>
+          </tr>
+          <tr>
+            <td><code>reload()</code></td>
+            <td>Fuerza otra petición con los mismos parámetros.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        Para peticiones con estado complejo o que necesitan <code>switchMap</code>, sigue teniendo
+        sentido RxJS. Para «pinta esto de la API», <code>httpResource</code> ahorra mucho código.
+      </p>
+
+      <h2>5. Interceptores funcionales</h2>
+      <pre><code>export const authInterceptor: HttpInterceptorFn = (req, next) =&gt; {
+  const token = inject(AuthService).token();
+  return token ? next(req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })) : next(req);
+};</code></pre>
+      <pre><code>provideHttpClient(withFetch(), withInterceptors([authInterceptor]));</code></pre>
+      <p>
+        Un interceptor es una función, no una clase. Se registra una vez y afecta a todas las
+        peticiones del inyector.
+      </p>
+
+      <h2>6. Ejercicio</h2>
+      <ol class="steps">
+        <li>
+          Configura <code>provideHttpClient(withFetch())</code> y crea
+          <code>UsuariosService</code> con <code>listar()</code> y <code>detalle(id)</code> tipados.
+        </li>
+        <li>
+          Consume la lista con <code>httpResource</code> y pinta los tres estados: cargando, error y
+          datos.
+        </li>
+        <li>
+          Añade un buscador por id que use <code>signal()</code> como parámetro de
+          <code>httpResource</code> y comprueba que cada cambio relanza la petición.
+        </li>
+        <li>
+          Fuerza un error (URL inválida) y verifica que la UI lo muestra sin romper el componente.
+        </li>
+        <li>
+          Repite la lista con <code>HttpClient</code> + <code>toSignal()</code> y compara: ¿qué
+          versión tiene menos código?
+        </li>
+      </ol>
+
+      <h2>Checklist de cierre</h2>
+      <ul class="check">
+        <li>Build y prettier limpios.</li>
+        <li>Ningún <code>any</code> en las respuestas HTTP.</li>
+        <li>Los estados de carga y error están cubiertos en la plantilla.</li>
+        <li>
+          Las URLs vienen de un <code>InjectionToken</code>, no están hardcodeadas en el componente.
+        </li>
+      </ul>
+
+      <nav class="lesson-nav">
+        <a href="02-services-di.html"><span class="dir">Anterior</span>← 02 · Servicios y DI</a>
+        <a href="04-rxjs.html"><span class="dir">Siguiente</span>04 · RxJS →</a>
+      </nav>
+    </main>
+  </body>
+</html>

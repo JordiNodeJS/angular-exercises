@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>03-ssr · SSR e hidratación</title>
+    <link rel="stylesheet" href="../assets/lesson.css" />
+  </head>
+  <body>
+    <main>
+      <div class="topbar">
+        <nav>
+          <a href="../index.html">← Índice de clases</a>
+          <a href="https://angular.dev/guide/ssr">Docs: SSR</a>
+        </nav>
+        <span class="crumb">Capítulo 04 · Quality</span>
+      </div>
+
+      <h1>03 · SSR e hidratación</h1>
+      <p class="lede">
+        HTML renderizado en el servidor y una app que despierta en el navegador sin repintar todo.
+        Más prerender para lo estático.
+      </p>
+
+      <ul class="chips">
+        <li class="chip chip--accent">Proyecto: ch04-03-ssr</li>
+        <li class="chip">Ruta: chapters/04-quality/03-ssr</li>
+        <li class="chip">Requiere: capítulo 03</li>
+      </ul>
+
+      <div class="objective">
+        <strong>Objetivo de la clase</strong>
+        <p>
+          <code>@angular/ssr</code> e hidratación. Entender cuándo SSR ayuda, cuándo estorba y qué
+          código rompe en el servidor.
+        </p>
+      </div>
+
+      <h2>1. Añadir SSR</h2>
+      <pre><code>pnpm exec ng add @angular/ssr</code></pre>
+      <p>
+        Añade dependencias (<code>@angular/ssr</code>), <code>server.ts</code>, la configuración de
+        servidor y los targets nuevos en <code>angular.json</code>. Como es una dependencia nueva,
+        en este repo se pide antes de instalarla.
+      </p>
+      <p>
+        Para un proyecto desde cero también existe <code>ng generate application --ssr</code>. Aquí
+        no se usa <code>ng new</code>: el workspace ya existe.
+      </p>
+
+      <h2>2. Modos de renderizado</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>RenderMode</th>
+            <th>Qué produce</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>Server</code></td>
+            <td>HTML por petición en el servidor. Datos por usuario.</td>
+          </tr>
+          <tr>
+            <td><code>Prerender</code></td>
+            <td>HTML en build. Páginas iguales para todos (SSG).</td>
+          </tr>
+          <tr>
+            <td><code>Client</code></td>
+            <td>CSR clásico. SPA detrás de login, por ejemplo.</td>
+          </tr>
+        </tbody>
+      </table>
+      <pre><code>// app.routes.server.ts
+import { RenderMode, ServerRoute } from '@angular/ssr';
+
+export const serverRoutes: ServerRoute[] = [
+  { path: '', renderMode: RenderMode.Prerender },
+  { path: 'productos/:id', renderMode: RenderMode.Prerender },
+  { path: 'cuenta/**', renderMode: RenderMode.Client },
+  { path: '**', renderMode: RenderMode.Server },
+];</code></pre>
+      <p>
+        La configuración se enchufa con
+        <code>provideServerRendering(withRoutes(serverRoutes))</code> en
+        <code>app.config.server.ts</code>.
+      </p>
+
+      <h2>3. Hidratación</h2>
+      <pre><code>// app.config.ts
+import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
+
+providers: [
+  provideBrowserGlobalErrorListeners(),
+  provideRouter(routes),
+  provideClientHydration(withEventReplay()),
+];</code></pre>
+      <p>
+        El HTML del servidor se reutiliza en el navegador en vez de regenerarse. Con
+        <code>withEventReplay()</code> los clics hechos antes de que la app hidrate no se pierden.
+      </p>
+      <div class="warn">
+        <p>
+          Si el HTML del servidor no coincide con el del cliente, Angular avisa de un
+          <em>hydration mismatch</em> y repinta. Casi siempre es contenido que depende de
+          <code>Date.now()</code>, <code>Math.random()</code>, <code>localStorage</code> o
+          <code>window</code>.
+        </p>
+      </div>
+
+      <h2>4. Código que rompe en el servidor</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Problema</th>
+            <th>Solución</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>window</code>, <code>document</code>, <code>navigator</code></td>
+            <td><code>inject(DOCUMENT)</code> o ejecutar en <code>afterNextRender()</code>.</td>
+          </tr>
+          <tr>
+            <td><code>localStorage</code> en el constructor</td>
+            <td>Mover a <code>afterNextRender()</code> o a un servicio por plataforma.</td>
+          </tr>
+          <tr>
+            <td><code>@if (isPlatformBrowser())</code> en plantilla</td>
+            <td>CSR y servidor pintan distinto: mismatch. Mantén el HTML igual.</td>
+          </tr>
+          <tr>
+            <td>Peticiones duplicadas</td>
+            <td>
+              <code>HttpClient</code> ya transfiere la caché del servidor al cliente; no la
+              desactives sin motivo.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <pre><code>import { Component, ElementRef, afterNextRender, viewChild } from '@angular/core';
+
+export class Panel {
+  private readonly caja = viewChild.required&lt;ElementRef&lt;HTMLElement&gt;&gt;('caja');
+
+  constructor() {
+    afterNextRender(() =&gt; {
+      // solo navegador
+      this.caja().nativeElement.scrollIntoView();
+    });
+  }
+}</code></pre>
+
+      <h2>5. ¿Cuándo no usar SSR?</h2>
+      <ul class="check">
+        <li>
+          App interna detrás de login: no hay SEO que ganar y añades un servidor que mantener.
+        </li>
+        <li>Todo el contenido depende del usuario: la parte útil no se puede prerenderizar.</li>
+        <li>No hay dónde ejecutar Node: usa <code>outputMode: "static"</code> y sirve ficheros.</li>
+      </ul>
+      <pre><code>"build": {
+  "options": { "outputMode": "static" }
+}</code></pre>
+
+      <h2>6. Ejercicio</h2>
+      <ol class="steps">
+        <li>
+          Añade SSR al ejercicio. Verifica con <code>curl http://localhost:4000</code> que el HTML
+          inicial ya trae contenido (no un <code>&lt;app-root&gt;</code> vacío).
+        </li>
+        <li>
+          Configura <code>app.routes.server.ts</code> con una ruta <code>Prerender</code> y
+          comprueba en <code>dist/</code> que genera un <code>.html</code> estático.
+        </li>
+        <li>
+          Añade <code>provideClientHydration(withEventReplay())</code> y mira en el HTML la marca de
+          hidratación y el comentario de <code>&lt;!--ngh--&gt;</code>.
+        </li>
+        <li>
+          Pinta <code>Date.now()</code> en la plantilla y provoca un mismatch a propósito. Lee el
+          warning entero.
+        </li>
+        <li>
+          Sustituye el acceso a <code>window</code> por <code>afterNextRender()</code> y comprueba
+          que el aviso desaparece.
+        </li>
+      </ol>
+
+      <h2>Checklist de cierre</h2>
+      <ul class="check">
+        <li>El build de SSR y el de navegador terminan sin errores.</li>
+        <li>El HTML servido incluye contenido renderizado en servidor.</li>
+        <li>
+          Sin accesos directos a <code>window</code> / <code>document</code> en constructores.
+        </li>
+        <li>Build y prettier limpios; dependencias nuevas justificadas.</li>
+      </ul>
+
+      <nav class="lesson-nav">
+        <a href="02-build.html"><span class="dir">Anterior</span>← 02 · Lint y build</a>
+        <a href="../index.html"><span class="dir">Fin del roadmap</span>Volver al índice</a>
+      </nav>
+    </main>
+  </body>
+</html>

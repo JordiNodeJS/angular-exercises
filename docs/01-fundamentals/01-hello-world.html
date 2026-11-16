@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>01-hello-world · CLI y estructura</title>
+    <link rel="stylesheet" href="../assets/lesson.css" />
+  </head>
+  <body>
+    <main>
+      <div class="topbar">
+        <nav>
+          <a href="../index.html">← Índice de clases</a>
+          <a href="https://angular.dev/installation">Docs: installation</a>
+        </nav>
+        <span class="crumb">Capítulo 01 · Fundamentals</span>
+      </div>
+
+      <h1>01 · Hello world: CLI y estructura</h1>
+      <p class="lede">
+        Entender qué genera el CLI, por dónde arranca la app y qué hace cada fichero. Nada de
+        componentes nuevos todavía: primero el esqueleto.
+      </p>
+
+      <ul class="chips">
+        <li class="chip chip--accent">Proyecto: ch01-01-hello-world</li>
+        <li class="chip">Ruta: chapters/01-fundamentals/01-hello-world</li>
+        <li class="chip">Nivel: arranque</li>
+      </ul>
+
+      <div class="objective">
+        <strong>Objetivo de la clase</strong>
+        <p>
+          <code>pnpm</code>, <code>ng serve</code> y la anatomía de <code>main.ts</code> y
+          <code>app.config.ts</code>. Al terminar sabes qué fichero tocar para cambiar el arranque
+          de una app Angular standalone.
+        </p>
+      </div>
+
+      <h2>1. Un workspace, una app por ejercicio</h2>
+      <p>
+        El repo <strong>no</strong> usa <code>ng new</code> por ejercicio. Hay un único workspace
+        con un solo <code>node_modules</code> y un <code>angular.json</code> que registra cada app:
+      </p>
+      <pre><code>angular-exercises/
+├── angular.json          ← fuente de verdad de los proyectos
+├── package.json          ← una sola instalación
+├── pnpm-workspace.yaml
+└── chapters/
+    └── 01-fundamentals/
+        └── 01-hello-world/   ← project-root de la app</code></pre>
+
+      <p>Para añadir un ejercicio nuevo (nunca dentro de uno existente):</p>
+      <pre><code>pnpm exec ng generate application ch02-03-http \
+  --project-root=chapters/02-state-data/03-http \
+  --style=css --minimal</code></pre>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Flag</th>
+            <th>Para qué</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>--project-root</code></td>
+            <td>
+              Coloca los ficheros en <code>chapters/&lt;capítulo&gt;/&lt;ejercicio&gt;</code>.
+            </td>
+          </tr>
+          <tr>
+            <td><code>--style=css</code></td>
+            <td>Sin preprocesadores. CSS plano siempre.</td>
+          </tr>
+          <tr>
+            <td><code>--minimal</code></td>
+            <td>Sin tests. Solo se omite en el capítulo de testing.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="warn">
+        <p>
+          Si el comando acaba con <code>Project name already exists</code> pero los ficheros están
+          creados, es la segunda pasada del CLI después de instalar dependencias. Comprueba el build
+          antes de tocar nada.
+        </p>
+      </div>
+
+      <h2>2. Anatomía del arranque</h2>
+      <p>
+        Angular 22 arranca con <code>bootstrapApplication</code>. No hay <code>AppModule</code>: la
+        configuración es un objeto <code>ApplicationConfig</code> con providers.
+      </p>
+
+      <h3>src/main.ts — el punto de entrada</h3>
+      <pre><code>import { bootstrapApplication } from '@angular/platform-browser';
+import { appConfig } from './app/app.config';
+import { App } from './app/app';
+
+bootstrapApplication(App, appConfig).catch((err) =&gt; console.error(err));</code></pre>
+      <p>
+        Monta el componente raíz y aplica la configuración. Es el único sitio que el CLI usa como
+        <code>browser</code> en <code>angular.json</code>. Si algún día sobra el
+        <code>.catch</code>, los errores de arranque desaparecen sin traza: no lo quites.
+      </p>
+
+      <h3>src/app/app.config.ts — los providers globales</h3>
+      <pre><code>import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { provideRouter } from '@angular/router';
+import { routes } from './app.routes';
+
+export const appConfig: ApplicationConfig = {
+  providers: [provideBrowserGlobalErrorListeners(), provideRouter(routes)],
+};</code></pre>
+      <p>
+        Aquí se enchufa todo lo que es global: router, HTTP, hidratación, interceptores. Cada
+        <code>provide*</code> es una función que devuelve providers; se componen en array.
+      </p>
+
+      <h3>src/app/app.ts — el componente raíz</h3>
+      <pre><code>import { Component, signal } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+
+@Component({
+  imports: [RouterOutlet],
+  selector: 'app-root',
+  styles: [],
+  template: `
+    &lt;h1&gt;{{ title() }}&lt;/h1&gt;
+
+    &lt;router-outlet /&gt;
+  `,
+})
+export class App {
+  protected readonly title = signal('Hello world');
+}</code></pre>
+      <p>
+        Fíjate en tres cosas que en Angular 22 son el default y por eso <em>no</em> aparecen:
+        <code>standalone: true</code>, <code>changeDetection: OnPush</code> y
+        <code>standalone</code>
+        en el import del componente. Escribirlos es ruido.
+      </p>
+
+      <h3>src/index.html — el host</h3>
+      <pre><code>&lt;body&gt;
+  &lt;app-root&gt;&lt;/app-root&gt;
+&lt;/body&gt;</code></pre>
+      <p>
+        El selector del componente raíz (<code>app-root</code>) tiene que coincidir con esta
+        etiqueta. Si lo renombras en <code>app.ts</code> y no aquí, la app se queda en blanco sin
+        error de compilación.
+      </p>
+
+      <h2>3. Sin zone.js</h2>
+      <p>
+        Este workspace <strong>no instala <code>zone.js</code></strong> y no hay
+        <code>provideZoneChangeDetection()</code> en la configuración: la app es <em>zoneless</em>.
+        La detección de cambios se dispara con signals, eventos del template y APIs de Angular, no
+        parcheando APIs del navegador.
+      </p>
+      <div class="note">
+        <p>
+          Consecuencia práctica: el estado que quieras ver en pantalla debe ser un
+          <code>signal()</code> (o un valor que Angular lea durante el render). Una propiedad normal
+          mutada desde un callback externo puede no refrescar la vista.
+        </p>
+      </div>
+
+      <h2>4. Ejercicio</h2>
+      <ol class="steps">
+        <li>
+          Sirve la app: <code>pnpm exec ng serve ch01-01-hello-world</code> y abre
+          <code>http://localhost:4200</code>.
+        </li>
+        <li>
+          Cambia el texto del <code>signal</code> a <code>Hola Angular</code> con el servidor
+          corriendo. Debe recargarse solo (HMR). Si no lo hace, mira la consola del dev-server.
+        </li>
+        <li>
+          Añade un segundo signal (<code>subtitulo</code>) y muéstralo en un <code>&lt;p&gt;</code>
+          con interpolación.
+        </li>
+        <li>
+          Renombra el selector a <code>app-raiz</code> en <code>app.ts</code> y olvídate del
+          <code>index.html</code>. ¿Qué ves? Arréglalo en un solo sitio y explica cuál era el
+          problema.
+        </li>
+        <li>
+          Quita <code>RouterOutlet</code> de <code>imports</code> dejando
+          <code>&lt;router-outlet /&gt;</code>
+          en la plantilla. Lee el error del compilador entero: es el patrón de error que verás mil
+          veces (<code>NG8001</code>).
+        </li>
+        <li>
+          Ejecuta <code>pnpm exec ng build ch01-01-hello-world</code> y localiza el bundle en
+          <code>dist/ch01-01-hello-world</code>.
+        </li>
+      </ol>
+
+      <h2>Checklist de cierre</h2>
+      <ul class="check">
+        <li><code>pnpm exec ng build ch01-01-hello-world</code> termina sin errores.</li>
+        <li>
+          <code
+            >pnpm exec prettier --check
+            "chapters/01-fundamentals/01-hello-world/**/*.{ts,html,css}"</code
+          >
+          limpio.
+        </li>
+        <li>
+          Sabes decir en qué fichero se añade un provider global y en cuál se cambia el componente
+          raíz.
+        </li>
+        <li>No has añadido dependencias ni tocado otros proyectos.</li>
+      </ul>
+
+      <nav class="lesson-nav">
+        <a href="../index.html"><span class="dir">Volver</span>Índice de clases</a>
+        <a href="02-templates.html"><span class="dir">Siguiente</span>02 · Templates →</a>
+      </nav>
+    </main>
+  </body>
+</html>

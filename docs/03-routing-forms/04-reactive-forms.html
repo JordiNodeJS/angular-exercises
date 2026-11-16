@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>04-reactive-forms · Formularios reactivos</title>
+    <link rel="stylesheet" href="../assets/lesson.css" />
+  </head>
+  <body>
+    <main>
+      <div class="topbar">
+        <nav>
+          <a href="../index.html">← Índice de clases</a>
+          <a href="https://angular.dev/guide/forms/reactive-forms">Docs: reactive forms</a>
+        </nav>
+        <span class="crumb">Capítulo 03 · Routing &amp; Forms</span>
+      </div>
+
+      <h1>04 · Reactive forms: el formulario como modelo</h1>
+      <p class="lede">
+        El estado del formulario vive en TypeScript, tipado y testeable. La plantilla solo conecta
+        inputs con ese modelo.
+      </p>
+
+      <ul class="chips">
+        <li class="chip chip--accent">Proyecto: ch03-04-reactive-forms</li>
+        <li class="chip">Ruta: chapters/03-routing-forms/04-reactive-forms</li>
+        <li class="chip">Requiere: 01-signals</li>
+      </ul>
+
+      <div class="objective">
+        <strong>Objetivo de la clase</strong>
+        <p>
+          <code>FormGroup</code>, <code>FormControl</code> y validadores, con formularios tipados.
+          Nota importante: en Angular 22 los formularios nuevos deberían usar Signal Forms.
+        </p>
+      </div>
+
+      <h2>1. Declarar el formulario</h2>
+      <pre><code>import { Component, inject } from '@angular/core';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+
+@Component({
+  imports: [ReactiveFormsModule],
+  selector: 'app-registro',
+  templateUrl: './registro.html',
+})
+export class Registro {
+  private readonly api = inject(UsuariosService);
+
+  protected readonly form = new FormGroup({
+    nombre: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.minLength(3)],
+    }),
+    email: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.email],
+    }),
+    edad: new FormControl&lt;number | null&gt;(null),
+  });
+
+  protected enviar(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    this.api.crear(this.form.getRawValue());
+  }
+}</code></pre>
+      <p>
+        <code>nonNullable: true</code> hace que el control nunca valga <code>null</code>: se empieza
+        en <code>''</code> y <code>reset()</code> vuelve a <code>''</code>. Sin eso, TypeScript te
+        obliga a tratar <code>null</code> en cada lectura.
+      </p>
+
+      <h2>2. Conectar la plantilla</h2>
+      <pre><code>&lt;form [formGroup]="form" (ngSubmit)="enviar()"&gt;
+  &lt;label&gt;
+    Nombre
+    &lt;input formControlName="nombre" /&gt;
+  &lt;/label&gt;
+
+  @if (form.controls.nombre.invalid &amp;&amp; form.controls.nombre.touched) {
+    @if (form.controls.nombre.hasError('required')) {
+      &lt;p class="error"&gt;El nombre es obligatorio.&lt;/p&gt;
+    } @else if (form.controls.nombre.hasError('minlength')) {
+      &lt;p class="error"&gt;Como mínimo 3 caracteres.&lt;/p&gt;
+    }
+  }
+
+  &lt;button type="submit" [disabled]="form.invalid"&gt;Registrar&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+      <p>
+        <code>formControlName</code> ata por nombre al <code>FormGroup</code>. Si el nombre no
+        existe, falla en runtime, no en el build.
+      </p>
+
+      <h2>3. Validadores</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Validador</th>
+            <th>Comprueba</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>required</code></td>
+            <td>No vacío (incluye <code>null</code>).</td>
+          </tr>
+          <tr>
+            <td><code>email</code></td>
+            <td>Forma de email, no que exista.</td>
+          </tr>
+          <tr>
+            <td><code>minLength</code> / <code>maxLength</code></td>
+            <td>Longitud del string.</td>
+          </tr>
+          <tr>
+            <td><code>pattern</code></td>
+            <td>Regex. Última opción: el mensaje de error es peor.</td>
+          </tr>
+        </tbody>
+      </table>
+      <pre><code>function sinEspacios(control: AbstractControl): ValidationErrors | null {
+  const valor = control.value as string;
+  return valor.includes(' ') ? { sinEspacios: true } : null;
+}</code></pre>
+      <div class="warn">
+        <p>
+          El validador devuelve <code>null</code> si todo va bien, o un objeto de errores. Devuelve
+          <code>{ campoInvalido: true }</code>, no el booleano <code>false</code>: un
+          <code>false</code> también cuenta como válido y esconde el bug.
+        </p>
+      </div>
+
+      <h2>4. Reaccionar a cambios</h2>
+      <pre><code>protected readonly email = toSignal(
+  this.form.controls.email.valueChanges,
+  { initialValue: this.form.controls.email.value },
+);</code></pre>
+      <p>
+        <code>valueChanges</code> es un Observable. Como en el resto del repo, se convierte a signal
+        en el borde con <code>toSignal()</code>; nada de suscripciones sueltas en la plantilla.
+      </p>
+
+      <h2>5. Signal Forms en Angular 22</h2>
+      <p>
+        <code>@angular/forms/signals</code> construye el formulario a partir de un signal y expone
+        la validación como un schema. Convive con Reactive Forms, pero es la dirección recomendada
+        para código nuevo:
+      </p>
+      <pre><code>import { form, required, email } from '@angular/forms/signals';</code></pre>
+      <div class="note">
+        <p>
+          Este ejercicio se hace con Reactive Forms porque es lo que pide el roadmap y porque el
+          ecosistema está lleno de él. Cuando acabes, lee la guía de Signal Forms y compara: menos
+          imports, sin <code>formControlName</code> y validación declarativa.
+        </p>
+      </div>
+
+      <h2>6. Ejercicio</h2>
+      <ol class="steps">
+        <li>
+          Crea un formulario de registro con nombre, email y edad, todos tipados y con
+          <code>nonNullable</code> donde tenga sentido.
+        </li>
+        <li>
+          Muestra el error solo cuando el campo está <code>touched</code> e <code>invalid</code>.
+        </li>
+        <li>Añade un validador propio que rechace espacios en el nombre y pruébalo en consola.</li>
+        <li>
+          Deshabilita el botón con <code>[disabled]="form.invalid"</code> y explica por qué
+          <em>también</em> validas en <code>enviar()</code>.
+        </li>
+        <li>
+          Convierte <code>valueChanges</code> del email a signal y muestra un resumen en vivo.
+        </li>
+      </ol>
+
+      <h2>Checklist de cierre</h2>
+      <ul class="check">
+        <li><code>pnpm exec ng serve ch03-04-reactive-forms</code> arranca sin errores.</li>
+        <li>Build y prettier limpios.</li>
+        <li>Ningún <code>ngModel</code> ni <code>FormsModule</code> en el ejercicio.</li>
+        <li>Todos los errores visibles tienen mensaje; ninguno es un <code>*ngIf</code>.</li>
+      </ul>
+
+      <nav class="lesson-nav">
+        <a href="03-guards.html"><span class="dir">Anterior</span>← 03 · Guards</a>
+        <a href="../04-quality/01-testing.html"
+          ><span class="dir">Siguiente</span>04-01 · Testing →</a
+        >
+      </nav>
+    </main>
+  </body>
+</html>

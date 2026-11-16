@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>03-control-flow · @if, @for, @switch</title>
+    <link rel="stylesheet" href="../assets/lesson.css" />
+  </head>
+  <body>
+    <main>
+      <div class="topbar">
+        <nav>
+          <a href="../index.html">← Índice de clases</a>
+          <a href="https://angular.dev/guide/templates/control-flow">Docs: control flow</a>
+        </nav>
+        <span class="crumb">Capítulo 01 · Fundamentals</span>
+      </div>
+
+      <h1>03 · Control flow: <code>@if</code>, <code>@for</code>, <code>@switch</code></h1>
+      <p class="lede">
+        El control de flujo nativo del template sustituye a las directivas estructurales. Es
+        sintaxis de bloque, no atributos: se ve qué pertenece a qué sin leer <code>*ngIf</code>.
+      </p>
+
+      <ul class="chips">
+        <li class="chip chip--accent">Proyecto: ch01-03-control-flow</li>
+        <li class="chip">Ruta: chapters/01-fundamentals/03-control-flow</li>
+        <li class="chip">Requiere: 02-templates</li>
+      </ul>
+
+      <div class="objective">
+        <strong>Objetivo de la clase</strong>
+        <p>
+          <code>@if</code>, <code>@for</code> y <code>@switch</code>, con sus variantes
+          <code>@else</code>, <code>@empty</code> y <code>track</code>. Y por qué
+          <code>*ngIf</code> / <code>*ngFor</code> están fuera del repo.
+        </p>
+      </div>
+
+      <h2>1. <code>@if</code></h2>
+      <pre><code>@if (usuario(); as u) {
+  &lt;p&gt;Hola, {{ u.nombre }}&lt;/p&gt;
+} @else if (cargando()) {
+  &lt;p&gt;Cargando…&lt;/p&gt;
+} @else {
+  &lt;p&gt;No hay sesión.&lt;/p&gt;
+}</code></pre>
+      <p>
+        <code>as</code> da nombre al valor cuando la condición es verdadera: es la forma limpia de
+        evitar <code>usuario()!.nombre</code> repetido.
+      </p>
+      <div class="note">
+        <p>
+          <code>@if</code> crea y destruye el DOM. Si el bloque contiene un componente, se destruye
+          de verdad (con su estado y sus suscripciones). No es <code>[hidden]</code>.
+        </p>
+      </div>
+
+      <h2>2. <code>@for</code></h2>
+      <p><code>track</code> es obligatorio:</p>
+      <pre><code>@for (tarea of tareas(); track tarea.id) {
+  &lt;li&gt;{{ $index + 1 }}. {{ tarea.titulo }}&lt;/li&gt;
+} @empty {
+  &lt;li&gt;No hay tareas.&lt;/li&gt;
+}</code></pre>
+      <p>Variables implícitas disponibles dentro del bloque:</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Variable</th>
+            <th>Valor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>$index</code></td>
+            <td>Posición, desde 0.</td>
+          </tr>
+          <tr>
+            <td><code>$first</code> / <code>$last</code></td>
+            <td>Booleano para el primer y último elemento.</td>
+          </tr>
+          <tr>
+            <td><code>$even</code> / <code>$odd</code></td>
+            <td>Paridad del índice.</td>
+          </tr>
+          <tr>
+            <td><code>$count</code></td>
+            <td>Total de elementos.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="warn">
+        <p>
+          <code>track</code> decide qué se reutiliza al cambiar la lista. Usa una clave estable
+          (<code>item.id</code>), nunca <code>$index</code> si la lista se reordena o se filtra: se
+          reutilizan nodos con el estado equivocado.
+        </p>
+      </div>
+
+      <h2>3. <code>@switch</code></h2>
+      <pre><code>@switch (estado()) {
+  @case ('cargando') {
+    &lt;app-spinner /&gt;
+  }
+  @case ('error') {
+    &lt;p&gt;Algo falló.&lt;/p&gt;
+  }
+  @default {
+    &lt;app-lista /&gt;
+  }
+}</code></pre>
+      <p>
+        Compara con <code>===</code>. No hay <em>fallthrough</em>: al acabar un
+        <code>@case</code> se sale del bloque. Para dos estados que comparten vista, une la
+        condición antes de llegar al template (<code>computed()</code>) en vez de duplicar
+        <code>@case</code>.
+      </p>
+
+      <h2>4. Lo que ya no se escribe</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Antes</th>
+            <th>Ahora</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>*ngIf</code></td>
+            <td><code>@if</code></td>
+          </tr>
+          <tr>
+            <td><code>*ngFor</code> + <code>trackBy</code></td>
+            <td><code>@for</code> + <code>track</code></td>
+          </tr>
+          <tr>
+            <td><code>*ngSwitch</code></td>
+            <td><code>@switch</code></td>
+          </tr>
+          <tr>
+            <td><code>ng-container</code> con directivas</td>
+            <td><code>@if</code> / <code>@for</code> directamente</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        El motivo no es estético: los bloques nativos son más rápidos, no necesitan importar
+        <code>NgIf</code> ni <code>NgFor</code> y el compilador los valida mejor. Además, las
+        directivas antiguas obligan a importar piezas sueltas en cada componente.
+      </p>
+
+      <h2>5. Ejercicio</h2>
+      <ol class="steps">
+        <li>
+          Monta una lista de tareas con un signal de array y píntala con <code>@for</code> +
+          <code>@empty</code>. Cada tarea con <code>id</code>, <code>titulo</code> y
+          <code>hecha</code>.
+        </li>
+        <li>
+          Añade un <code>computed()</code> con el contador de pendientes y un <code>@if</code> que
+          muestre «Todo hecho» cuando no queden.
+        </li>
+        <li>
+          Añade un filtro (<code>todas</code> / <code>pendientes</code> / <code>hechas</code>) y
+          resuélvelo con <code>@switch</code> en la cabecera y <code>@for</code> en la lista.
+        </li>
+        <li>
+          Marca visualmente la primera y la última con <code>$first</code> y <code>$last</code>.
+        </li>
+        <li>
+          Cambia <code>track tarea.id</code> por <code>track $index</code>, borra la primera tarea y
+          explica qué pasa con las que ya estaban marcadas.
+        </li>
+      </ol>
+
+      <h2>Checklist de cierre</h2>
+      <ul class="check">
+        <li>Build y prettier limpios.</li>
+        <li>
+          Ningún <code>*ngIf</code>, <code>*ngFor</code> ni <code>*ngSwitch</code> en el repo.
+        </li>
+        <li>Todos los <code>@for</code> tienen <code>track</code> con clave estable.</li>
+        <li>
+          El estado vacío está cubierto con <code>@empty</code>, no con un <code>@if</code> aparte.
+        </li>
+      </ul>
+
+      <nav class="lesson-nav">
+        <a href="02-templates.html"><span class="dir">Anterior</span>← 02 · Templates</a>
+        <a href="04-pipes.html"><span class="dir">Siguiente</span>04 · Pipes y directivas →</a>
+      </nav>
+    </main>
+  </body>
+</html>

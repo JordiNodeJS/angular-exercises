@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>02-services-di · Servicios e inyección</title>
+    <link rel="stylesheet" href="../assets/lesson.css" />
+  </head>
+  <body>
+    <main>
+      <div class="topbar">
+        <nav>
+          <a href="../index.html">← Índice de clases</a>
+          <a href="https://angular.dev/guide/di">Docs: dependency injection</a>
+        </nav>
+        <span class="crumb">Capítulo 02 · State &amp; Data</span>
+      </div>
+
+      <h1>02 · Servicios e inyección de dependencias</h1>
+      <p class="lede">
+        Sacar estado y lógica del componente: un servicio singleton con signals y consumidores que
+        lo piden con <code>inject()</code>.
+      </p>
+
+      <ul class="chips">
+        <li class="chip chip--accent">Proyecto: ch02-02-services-di</li>
+        <li class="chip">Ruta: chapters/02-state-data/02-services-di</li>
+        <li class="chip">Requiere: 02-01-signals</li>
+      </ul>
+
+      <div class="objective">
+        <strong>Objetivo de la clase</strong>
+        <p>
+          <code>@Service</code>, <code>inject()</code> y <code>providedIn: 'root'</code>. Entender
+          qué significa singleton, cuándo quieres una instancia por componente y cómo sustituir un
+          provider.
+        </p>
+      </div>
+
+      <h2>1. Declarar un servicio</h2>
+      <p>
+        Angular 22 trae el decorador <code>@Service()</code>: marca la clase y la deja disponible en
+        el inyector automáticamente.
+      </p>
+      <pre><code>import { Service, signal, computed } from '@angular/core';
+
+@Service()
+export class CarritoService {
+  private readonly _lineas = signal&lt;Linea[]&gt;([]);
+
+  readonly lineas = this._lineas.asReadonly();
+  readonly total = computed(() =&gt;
+    this._lineas().reduce((suma, l) =&gt; suma + l.precio * l.cantidad, 0),
+  );
+
+  anadir(linea: Linea): void {
+    this._lineas.update((previas) =&gt; [...previas, linea]);
+  }
+}</code></pre>
+      <p>
+        El equivalente tradicional, que también es válido, es
+        <code>@Injectable({ providedIn: 'root' })</code>. Lo importante: el servicio expone
+        <code>asReadonly()</code>, no el signal escribible. Los consumidores leen, el servicio
+        decide.
+      </p>
+      <div class="note">
+        <p>
+          <code>@Service()</code> acepta <code>{ autoProvided: false }</code> si no quieres
+          auto-registro, y <code>{ factory: () =&gt; T }</code> para construirlo a mano. Para el 95
+          % de los casos, <code>@Service()</code> a secas.
+        </p>
+      </div>
+
+      <h2>2. Consumir con <code>inject()</code></h2>
+      <pre><code>import { Component, inject } from '@angular/core';
+
+@Component({
+  selector: 'app-carrito',
+  template: `&lt;p&gt;{{ carrito.total() | currency: 'EUR' }}&lt;/p&gt;`,
+})
+export class Carrito {
+  protected readonly carrito = inject(CarritoService);
+}</code></pre>
+      <p>
+        Sin constructores. <code>inject()</code> solo funciona en contexto de inyección: campo de
+        clase, constructor o una función que se ejecute ahí. No dentro de un <code>setTimeout</code>
+        ni de un callback.
+      </p>
+
+      <h2>3. Jerarquía de inyectores</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Dónde se declara</th>
+            <th>Alcance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>providedIn: 'root'</code> / <code>@Service()</code></td>
+            <td>Uno para toda la app.</td>
+          </tr>
+          <tr>
+            <td><code>providers</code> de un componente</td>
+            <td>Una instancia por instancia de ese componente (y sus hijos).</td>
+          </tr>
+          <tr>
+            <td><code>providers</code> de una ruta (<code>loadChildren</code>)</td>
+            <td>Una instancia por ruta cargada.</td>
+          </tr>
+        </tbody>
+      </table>
+      <pre><code>@Component({
+  selector: 'app-editor',
+  providers: [BorradorService], // instancia local, se destruye con el componente
+  /* ... */
+})
+export class Editor {
+  private readonly borrador = inject(BorradorService);
+}</code></pre>
+      <div class="warn">
+        <p>
+          Si dos componentes piden un servicio cuyo estado esperas compartir y no se ven entre sí,
+          mira quién lo declara en <code>providers</code>. Un servicio «duplicado» casi siempre es
+          un provider local de más.
+        </p>
+      </div>
+
+      <h2>4. Inyección por token</h2>
+      <p>Para valores de configuración o interfaces, se inyecta un token, no una clase.</p>
+      <pre><code>export const API_URL = new InjectionToken&lt;string&gt;('API_URL');
+
+// app.config.ts
+providers: [{ provide: API_URL, useValue: 'https://api.ejemplo.dev' }];
+
+// servicio
+private readonly apiUrl = inject(API_URL);</code></pre>
+      <p>
+        Ventaja: en tests se cambia el valor sin tocar el servicio.
+        <code>{ provide: API_URL, useValue: 'http://localhost:3000' }</code> y listo.
+      </p>
+
+      <h2>5. Sustituir un provider</h2>
+      <pre><code>// app.config.ts
+export const appConfig: ApplicationConfig = {
+  providers: [
+    { provide: CarritoService, useClass: CarritoConDescuentoService },
+    // o useExisting / useValue según el caso
+  ],
+};</code></pre>
+      <p>
+        Es el mecanismo detrás de los dobles de test y de las implementaciones por plataforma
+        (navegador / servidor en SSR).
+      </p>
+
+      <h2>6. Ejercicio</h2>
+      <ol class="steps">
+        <li>
+          Crea <code>CarritoService</code> con <code>@Service()</code>: lineas privadas, lectura con
+          <code>asReadonly()</code>, <code>total</code> con <code>computed()</code>.
+        </li>
+        <li>
+          Crea dos componentes hermanos que inyecten el servicio: uno añade productos, otro muestra
+          el total. Comprueba que comparten estado.
+        </li>
+        <li>
+          Añade un componente con <code>providers: [CarritoService]</code> y explica por qué su
+          total ya no coincide.
+        </li>
+        <li>
+          Sustituye la URL por un <code>InjectionToken</code> y cámbiala en
+          <code>app.config.ts</code>.
+        </li>
+        <li>
+          Ordena el código: el componente no importa nada de HTTP, solo habla con el servicio.
+        </li>
+      </ol>
+
+      <h2>Checklist de cierre</h2>
+      <ul class="check">
+        <li>Build y prettier limpios.</li>
+        <li>Cero inyección por constructor: todo <code>inject()</code>.</li>
+        <li>El estado de negocio vive en el servicio, no en el componente.</li>
+        <li>Los signals privados no se exponen escribibles.</li>
+      </ul>
+
+      <nav class="lesson-nav">
+        <a href="01-signals.html"><span class="dir">Anterior</span>← 01 · Signals</a>
+        <a href="03-http.html"><span class="dir">Siguiente</span>03 · HTTP →</a>
+      </nav>
+    </main>
+  </body>
+</html>

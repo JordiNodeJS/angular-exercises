@@ -26,6 +26,7 @@ angular-exercises/
 │       ├── 01-testing/
 │       ├── 02-build/
 │       └── 03-ssr/
+├── docs/              ← clases de estudio en HTML (una por ejercicio)
 └── shared/            (opcional, librería común)
 ```
 
@@ -80,6 +81,22 @@ pnpm exec ng serve ch01-01-hello-world
 - `--minimal` evita tests: úsalo salvo en el capítulo de testing.
 - Al generar la app, borra el `.gitkeep` de esa carpeta; ya no hace falta.
 - Cada app corre en su propio puerto si lo indicas: `pnpm exec ng serve ch02-01-signals --port 4201`.
+
+## Clases
+
+La teoría de cada ejercicio vive en `docs/`, en HTML estático. Se abre con doble clic: no necesita
+servidor, build ni dependencias.
+
+```bash
+start docs/index.html          # Windows
+```
+
+- `docs/index.html` es el índice y el orden recomendado.
+- Una clase por ejercicio, con la misma ruta que su app: `docs/03-routing-forms/01-router.html`.
+- El estado real del ejercicio está en la tabla de progreso de abajo y en Notion, no en el HTML.
+- Al crear un ejercicio nuevo, añade su clase y enlázala desde el índice.
+- `docs/**/*.html` se formatea con el parser HTML de Prettier, no con el de Angular
+  (ver `.prettierrc`).
 
 ## Progreso
 

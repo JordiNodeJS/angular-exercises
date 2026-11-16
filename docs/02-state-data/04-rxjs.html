@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>04-rxjs · Observables y operadores</title>
+    <link rel="stylesheet" href="../assets/lesson.css" />
+  </head>
+  <body>
+    <main>
+      <div class="topbar">
+        <nav>
+          <a href="../index.html">← Índice de clases</a>
+          <a href="https://rxjs.dev">Docs: rxjs.dev</a>
+        </nav>
+        <span class="crumb">Capítulo 02 · State &amp; Data</span>
+      </div>
+
+      <h1>04 · RxJS: streams donde toca</h1>
+      <p class="lede">
+        RxJS sigue en Angular para eventos y cancelación. La regla del repo: un Observable se
+        convierte en signal en el borde, y el componente no se suscribe a mano.
+      </p>
+
+      <ul class="chips">
+        <li class="chip chip--accent">Proyecto: ch02-04-rxjs</li>
+        <li class="chip">Ruta: chapters/02-state-data/04-rxjs</li>
+        <li class="chip">Requiere: 02-03-http</li>
+      </ul>
+
+      <div class="objective">
+        <strong>Objetivo de la clase</strong>
+        <p>
+          <code>Observable</code>, <code>map</code>, <code>switchMap</code>,
+          <code>catchError</code> y <code>toSignal</code>. Y saber cuándo <em>no</em> hace falta
+          RxJS.
+        </p>
+      </div>
+
+      <h2>1. Observable, en una frase</h2>
+      <p>
+        Una colección de valores a lo largo del tiempo, con cancelación. Un
+        <code>Promise</code> entrega un valor y termina; un <code>Observable</code> puede entregar
+        muchos, ninguno o fallar, y se puede cancelar antes.
+      </p>
+      <pre><code>import { Observable } from 'rxjs';
+
+readonly teclas$: Observable&lt;string&gt; = fromEvent&lt;KeyboardEvent&gt;(document, 'keydown').pipe(
+  map((e) =&gt; e.key),
+);</code></pre>
+      <div class="note">
+        <p>
+          El <code>$</code> al final del nombre es convención, no sintaxis: avisa de que es un
+          stream, no un valor.
+        </p>
+      </div>
+
+      <h2>2. Los operadores que se usan de verdad</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Operador</th>
+            <th>Para qué</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>map</code></td>
+            <td>Transformar cada valor.</td>
+          </tr>
+          <tr>
+            <td><code>filter</code></td>
+            <td>Descartar valores.</td>
+          </tr>
+          <tr>
+            <td><code>switchMap</code></td>
+            <td>
+              Cambiar a otro stream y <strong>cancelar el anterior</strong>. El de las búsquedas.
+            </td>
+          </tr>
+          <tr>
+            <td><code>catchError</code></td>
+            <td>Convertir un error en un valor o relanzarlo.</td>
+          </tr>
+          <tr>
+            <td><code>debounceTime</code> + <code>distinctUntilChanged</code></td>
+            <td>Esperar a que el usuario pare de escribir y evitar repetidos.</td>
+          </tr>
+          <tr>
+            <td><code>tap</code></td>
+            <td>Efecto lateral de depuración. Se quita antes de cerrar el ejercicio.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        <code>mergeMap</code> no cancela, <code>concatMap</code> encola. Para peticiones disparadas
+        por input del usuario, casi siempre quieres <code>switchMap</code>.
+      </p>
+
+      <h2>3. Búsqueda con <code>switchMap</code></h2>
+      <pre><code>readonly resultados = toSignal(
+  this.busqueda.valueChanges.pipe(
+    debounceTime(300),
+    distinctUntilChanged(),
+    switchMap((texto) =&gt;
+      this.http.get&lt;Resultado[]&gt;('/api/buscar', { params: { q: texto } }).pipe(
+        catchError(() =&gt; of([] as Resultado[])),
+      ),
+    ),
+  ),
+  { initialValue: [] as Resultado[] },
+);</code></pre>
+      <p>
+        Cada tecla cancelaría la petición anterior si no hubiera <code>debounceTime</code>;
+        <code>switchMap</code> se queda con la última respuesta y descarta las viejas que lleguen
+        tarde.
+      </p>
+
+      <h2>4. <code>toSignal()</code>: el puente</h2>
+      <pre><code>import { toSignal } from '@angular/core/rxjs-interop';
+
+readonly usuarios = toSignal(this.usuariosService.listar(), {
+  initialValue: [] as Usuario[],
+});</code></pre>
+      <ul class="check">
+        <li>Se usa en campo de clase o en contexto de inyección.</li>
+        <li>Se desuscribe solo al destruir el componente.</li>
+        <li>Con <code>initialValue</code> no hay <code>undefined</code> en la plantilla.</li>
+      </ul>
+      <p>
+        El camino inverso es <code>toObservable()</code>, necesario cuando un operador tiene que
+        reaccionar a un signal.
+      </p>
+
+      <h2>5. Suscripciones manuales: cuándo y cómo</h2>
+      <p>
+        Solo para efectos imperativos (un <em>toast</em>, una navegación al terminar). Siempre con
+        limpieza:
+      </p>
+      <pre><code>private readonly destroyRef = inject(DestroyRef);
+
+constructor() {
+  this.api.guardar(this.form.value).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    next: () =&gt; this.toast.exito('Guardado'),
+    error: () =&gt; this.toast.error('No se pudo guardar'),
+  });
+}</code></pre>
+      <div class="warn">
+        <p>
+          Un <code>.subscribe()</code> sin <code>takeUntilDestroyed</code> es una fuga de memoria y
+          una escritura en un componente muerto. Es el error más común de esta clase.
+        </p>
+      </div>
+
+      <h2>6. Ejercicio</h2>
+      <ol class="steps">
+        <li>
+          Crea un buscador con <code>FormControl</code> o un signal + <code>toObservable()</code>.
+          Aplica <code>debounceTime</code>, <code>distinctUntilChanged</code> y
+          <code>switchMap</code>.
+        </li>
+        <li>
+          Convierte el resultado a signal con <code>toSignal()</code> y pinta lista vacía, cargando
+          y error.
+        </li>
+        <li>
+          Cambia <code>switchMap</code> por <code>mergeMap</code> y provoca respuestas fuera de
+          orden (latencia artificial). Explica qué se ve en pantalla y por qué.
+        </li>
+        <li>
+          Añade un botón que dispare un guardado y gestione el resultado con
+          <code>takeUntilDestroyed</code>.
+        </li>
+        <li>
+          Elimina todos los <code>.subscribe()</code> que no sean imprescindibles. ¿Cuántos quedan y
+          por qué?
+        </li>
+      </ol>
+
+      <h2>Checklist de cierre</h2>
+      <ul class="check">
+        <li>Build y prettier limpios.</li>
+        <li>
+          Sin <code>subscribe</code> sueltos: o <code>toSignal</code> o
+          <code>takeUntilDestroyed</code>.
+        </li>
+        <li>La búsqueda cancela peticiones anteriores.</li>
+        <li>Ningún <code>tap</code> de depuración en el resultado final.</li>
+      </ul>
+
+      <nav class="lesson-nav">
+        <a href="03-http.html"><span class="dir">Anterior</span>← 03 · HTTP</a>
+        <a href="../03-routing-forms/01-router.html"
+          ><span class="dir">Siguiente</span>03-01 · Router →</a
+        >
+      </nav>
+    </main>
+  </body>
+</html>

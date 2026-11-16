@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>01-testing · TestBed</title>
+    <link rel="stylesheet" href="../assets/lesson.css" />
+  </head>
+  <body>
+    <main>
+      <div class="topbar">
+        <nav>
+          <a href="../index.html">← Índice de clases</a>
+          <a href="https://angular.dev/guide/testing">Docs: testing</a>
+        </nav>
+        <span class="crumb">Capítulo 04 · Quality</span>
+      </div>
+
+      <h1>01 · Testing: componentes y servicios</h1>
+      <p class="lede">
+        Probar comportamiento, no implementación. Un test que se rompe al renombrar una variable
+        privada está mal escrito.
+      </p>
+
+      <ul class="chips">
+        <li class="chip chip--accent">Proyecto: ch04-01-testing</li>
+        <li class="chip">Ruta: chapters/04-quality/01-testing</li>
+        <li class="chip">Requiere: capítulo 02</li>
+      </ul>
+
+      <div class="objective">
+        <strong>Objetivo de la clase</strong>
+        <p>
+          <code>TestBed</code>, tests de componentes y de servicios, y peticiones HTTP con
+          <code>HttpTestingController</code>. Es el único ejercicio que se genera
+          <strong>sin</strong> <code>--minimal</code>.
+        </p>
+      </div>
+
+      <h2>1. Generar el ejercicio con tests</h2>
+      <pre><code>pnpm exec ng generate application ch04-01-testing \
+  --project-root=chapters/04-quality/01-testing \
+  --style=css</code></pre>
+      <div class="note">
+        <p>
+          Sin <code>--minimal</code>. Es la excepción del repo: aquí los tests son el ejercicio, no
+          ruido. El runner por defecto del proyecto es el que configure el CLI; comprueba el
+          <code>package.json</code> y el target <code>test</code> antes de empezar.
+        </p>
+      </div>
+
+      <h2>2. Un servicio puro</h2>
+      <pre><code>describe('CarritoService', () =&gt; {
+  let servicio: CarritoService;
+
+  beforeEach(() =&gt; {
+    TestBed.configureTestingModule({});
+    servicio = TestBed.inject(CarritoService);
+  });
+
+  it('empieza vacío', () =&gt; {
+    expect(servicio.lineas()).toEqual([]);
+    expect(servicio.total()).toBe(0);
+  });
+
+  it('suma el total al añadir', () =&gt; {
+    servicio.anadir({ id: 1, precio: 10, cantidad: 2 });
+    expect(servicio.total()).toBe(20);
+  });
+});</code></pre>
+      <p>
+        <code>TestBed.inject()</code> da la misma instancia que usaría la app: no hace falta
+        construirla a mano.
+      </p>
+
+      <h2>3. Un componente</h2>
+      <pre><code>describe('Contador', () =&gt; {
+  beforeEach(async () =&gt; {
+    await TestBed.configureTestingModule({ imports: [Contador] }).compileComponents();
+  });
+
+  it('incrementa al pulsar', async () =&gt; {
+    const fixture = TestBed.createComponent(Contador);
+    fixture.detectChanges();
+
+    const boton: HTMLButtonElement = fixture.nativeElement.querySelector('button');
+    boton.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('p').textContent).toContain('1');
+  });
+});</code></pre>
+      <ul class="check">
+        <li><code>createComponent</code> no renderiza; hace falta <code>detectChanges()</code>.</li>
+        <li>
+          En apps zoneless, espera con <code>await fixture.whenStable()</code> antes de leer el DOM.
+        </li>
+        <li>
+          Si el componente usa <code>input()</code>, asígnalo con
+          <code>fixture.componentRef.setInput('nombre', 'Ada')</code> antes del primer
+          <code>detectChanges()</code>.
+        </li>
+      </ul>
+
+      <h2>4. HTTP con <code>HttpTestingController</code></h2>
+      <pre><code>import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
+
+describe('UsuariosService', () =&gt; {
+  beforeEach(() =&gt; {
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
+  });
+
+  it('lista usuarios', () =&gt; {
+    const servicio = TestBed.inject(UsuariosService);
+    const http = TestBed.inject(HttpTestingController);
+
+    let resultado: Usuario[] = [];
+    servicio.listar().subscribe((usuarios) =&gt; (resultado = usuarios));
+
+    const peticion = http.expectOne('/api/usuarios');
+    expect(peticion.request.method).toBe('GET');
+    peticion.flush([{ id: 1, nombre: 'Ada', email: 'ada@ejemplo.dev' }]);
+
+    expect(resultado.length).toBe(1);
+    http.verify();
+  });
+});</code></pre>
+      <p>
+        <code>http.verify()</code> falla si quedó alguna petición sin responder. Es la red de
+        seguridad contra tests que «pasan» sin comprobar nada.
+      </p>
+
+      <h2>5. Qué probar y qué no</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Sí</th>
+            <th>No</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Lógica de negocio del servicio.</td>
+            <td>Que Angular renderiza un <code>@if</code>.</td>
+          </tr>
+          <tr>
+            <td>Validadores y estados de error.</td>
+            <td>Detalles de implementación (métodos privados).</td>
+          </tr>
+          <tr>
+            <td>Que un clic produce el efecto esperado.</td>
+            <td>Que un componente llama a un método concreto.</td>
+          </tr>
+          <tr>
+            <td>Contratos HTTP (URL, método, cuerpo).</td>
+            <td>La respuesta real de un backend.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>6. Ejercicio</h2>
+      <ol class="steps">
+        <li>
+          Genera el ejercicio sin <code>--minimal</code> y ejecuta los tests que trae por defecto.
+          Deben pasar antes de tocar nada.
+        </li>
+        <li>Escribe tres tests de <code>CarritoService</code>: vacío, añadir y total.</li>
+        <li>Escribe un test de componente que pulse un botón y compruebe el DOM.</li>
+        <li>
+          Escribe un test de <code>UsuariosService</code> con <code>HttpTestingController</code>,
+          incluido el caso de error 500.
+        </li>
+        <li>
+          Rompe a propósito la lógica del servicio y comprueba que el test falla. Un test que no
+          puede fallar no vale.
+        </li>
+      </ol>
+
+      <h2>Checklist de cierre</h2>
+      <ul class="check">
+        <li><code>pnpm exec ng test ch04-01-testing</code> en verde.</li>
+        <li>Build y prettier limpios.</li>
+        <li>Ningún <code>setTimeout</code> en un test: esperas con <code>whenStable</code>.</li>
+        <li>Has visto un test fallar a propósito y volver a verde.</li>
+      </ul>
+
+      <nav class="lesson-nav">
+        <a href="../03-routing-forms/04-reactive-forms.html"
+          ><span class="dir">Anterior</span>← 03-04 · Reactive forms</a
+        >
+        <a href="02-build.html"><span class="dir">Siguiente</span>02 · Lint y build →</a>
+      </nav>
+    </main>
+  </body>
+</html>

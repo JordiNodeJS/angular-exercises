@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>02-lazy-loading · Carga diferida</title>
+    <link rel="stylesheet" href="../assets/lesson.css" />
+  </head>
+  <body>
+    <main>
+      <div class="topbar">
+        <nav>
+          <a href="../index.html">← Índice de clases</a>
+          <a href="https://angular.dev/guide/routing/lazy-loading">Docs: lazy loading</a>
+        </nav>
+        <span class="crumb">Capítulo 03 · Routing &amp; Forms</span>
+      </div>
+
+      <h1>02 · Lazy loading: cargar cuando se pisa</h1>
+      <p class="lede">
+        Partir el bundle por rutas. El usuario descarga lo que visita, no la app entera, y el build
+        te lo dice con chunks separados.
+      </p>
+
+      <ul class="chips">
+        <li class="chip chip--accent">Proyecto: ch03-02-lazy-loading</li>
+        <li class="chip">Ruta: chapters/03-routing-forms/02-lazy-loading</li>
+        <li class="chip">Requiere: 03-01-router</li>
+      </ul>
+
+      <div class="objective">
+        <strong>Objetivo de la clase</strong>
+        <p>
+          <code>loadComponent</code> y <code>loadChildren</code>, más la diferencia con
+          <code>component</code>. Sabrás leer en el build qué se ha diferido y qué no.
+        </p>
+      </div>
+
+      <h2>1. Eager vs lazy</h2>
+      <pre><code>// eager: entra en el bundle inicial
+{ path: 'inicio', component: Inicio }
+
+// lazy: se descarga al navegar
+{ path: 'admin', loadComponent: () =&gt; import('./admin/admin').then((m) =&gt; m.Admin) }</code></pre>
+      <p>
+        Con <code>component</code> el código viaja en el <code>main.js</code>. Con
+        <code>loadComponent</code> el compilador crea un chunk aparte y lo pide en la primera
+        navegación.
+      </p>
+
+      <h2>2. <code>loadComponent</code></h2>
+      <pre><code>{
+  path: 'admin',
+  loadComponent: () =&gt; import('./admin/admin').then((m) =&gt; m.Admin),
+}</code></pre>
+      <p>Si el componente tiene <code>export default</code>, el <code>then</code> sobra:</p>
+      <pre><code>// admin.ts
+export default class Admin { /* ... */ }
+
+// routes
+{ path: 'admin', loadComponent: () =&gt; import('./admin/admin') }</code></pre>
+      <p>
+        Una ruta lazy no aporta nada si el componente es diminuto o se visita siempre al arrancar:
+        añades una petición de red a cambio de nada.
+      </p>
+
+      <h2>3. <code>loadChildren</code></h2>
+      <p>Para diferir un bloque entero con sus rutas hijas:</p>
+      <pre><code>// tienda/tienda.routes.ts
+import { Routes } from '@angular/router';
+
+export const routes: Routes = [
+  { path: '', component: Tienda },
+  { path: ':id', component: Producto },
+];</code></pre>
+      <pre><code>// app.routes.ts
+{
+  path: 'tienda',
+  loadChildren: () =&gt; import('./tienda/tienda.routes').then((m) =&gt; m.routes),
+}</code></pre>
+      <p>
+        Ventaja frente a <code>loadComponent</code>: el chunk incluye todo lo que comparten esas
+        rutas hijas, y los providers de la ruta se crean ahí (otro inyector, otra instancia de los
+        servicios que declare).
+      </p>
+
+      <h2>4. Comprobarlo en el build</h2>
+      <pre><code>pnpm exec ng build ch03-02-lazy-loading</code></pre>
+      <pre><code>Initial chunk files | Names         |  Raw size
+main-XXXX.js        | main          | 190.33 kB
+styles-XXXX.css     | styles        |   0 bytes
+
+Lazy chunk files    | Names         |  Raw size
+chunk-XXXX.js       | admin         |  12.10 kB
+chunk-YYYY.js       | tienda-routes |  25.40 kB</code></pre>
+      <p>
+        Si la ruta lazy no aparece como <em>Lazy chunk</em>, el import ha quedado estático: revisa
+        que no haya un <code>import</code> normal del componente en otro fichero, que lo arrastraría
+        al bundle inicial.
+      </p>
+      <div class="warn">
+        <p>
+          Un <code>import</code> estático del componente diferido en cualquier sitio (aunque sea
+          solo para un tipo) rompe el lazy loading. Para tipos, usa <code>import type</code>.
+        </p>
+      </div>
+
+      <h2>5. Precarga (opcional)</h2>
+      <pre><code>providers: [provideRouter(routes, withPreloading(PreloadAllModules))];</code></pre>
+      <p>
+        Mantiene el bundle inicial pequeño, pero descarga el resto en segundo plano cuando la app
+        está ociosa. Útil cuando las rutas se visitan casi siempre.
+      </p>
+
+      <h2>6. Ejercicio</h2>
+      <ol class="steps">
+        <li>
+          Convierte una ruta existente a <code>loadComponent</code> y compara el build antes y
+          después.
+        </li>
+        <li>
+          Crea una sección <code>tienda</code> con dos rutas hijas y <code>loadChildren</code>.
+        </li>
+        <li>Comprueba en la pestaña Network que el chunk se pide solo al entrar en la sección.</li>
+        <li>
+          Rompe el lazy loading con un <code>import</code> estático del componente diferido y
+          explica qué cambia en el build.
+        </li>
+        <li>
+          Añade <code>withPreloading(PreloadAllModules)</code> y observa cuándo se descarga ahora.
+        </li>
+      </ol>
+
+      <h2>Checklist de cierre</h2>
+      <ul class="check">
+        <li>El build muestra al menos un <em>Lazy chunk</em>.</li>
+        <li>Build y prettier limpios.</li>
+        <li>Sin imports estáticos de los componentes diferidos.</li>
+        <li>Sabes explicar qué providers cambian de alcance con <code>loadChildren</code>.</li>
+      </ul>
+
+      <nav class="lesson-nav">
+        <a href="01-router.html"><span class="dir">Anterior</span>← 01 · Router</a>
+        <a href="03-guards.html"><span class="dir">Siguiente</span>03 · Guards →</a>
+      </nav>
+    </main>
+  </body>
+</html>

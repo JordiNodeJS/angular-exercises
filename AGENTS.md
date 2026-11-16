@@ -16,6 +16,7 @@ Repo personal para aprender Angular con ejercicios pequeños. Un único workspac
 
 ```
 chapters/<capítulo>/<ejercicio>/   → una app Angular (project-root)
+docs/<capítulo>/<ejercicio>.html   → clase de estudio de ese ejercicio
 shared/                            → solo si de verdad se comparte código
 angular.json                       → fuente de verdad de los proyectos
 ```

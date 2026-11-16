@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>03-guards · Guards funcionales</title>
+    <link rel="stylesheet" href="../assets/lesson.css" />
+  </head>
+  <body>
+    <main>
+      <div class="topbar">
+        <nav>
+          <a href="../index.html">← Índice de clases</a>
+          <a href="https://angular.dev/guide/routing/guards">Docs: guards</a>
+        </nav>
+        <span class="crumb">Capítulo 03 · Routing &amp; Forms</span>
+      </div>
+
+      <h1>03 · Guards: decidir si se entra</h1>
+      <p class="lede">
+        Funciones, no clases. Devuelven <code>true</code>, <code>false</code> o una redirección, y
+        se ejecutan en el momento de la navegación.
+      </p>
+
+      <ul class="chips">
+        <li class="chip chip--accent">Proyecto: ch03-03-guards</li>
+        <li class="chip">Ruta: chapters/03-routing-forms/03-guards</li>
+        <li class="chip">Requiere: 03-01-router</li>
+      </ul>
+
+      <div class="objective">
+        <strong>Objetivo de la clase</strong>
+        <p>
+          <code>CanActivateFn</code> y <code>CanMatchFn</code> de autenticación, más un guard de
+          datos para evitar perder un formulario a medio rellenar.
+        </p>
+      </div>
+
+      <h2>1. Un guard es una función</h2>
+      <pre><code>import { inject } from '@angular/core';
+import { CanActivateFn, Router } from '@angular/router';
+
+export const authGuard: CanActivateFn = () =&gt; {
+  const sesion = inject(SesionService);
+  const router = inject(Router);
+
+  return sesion.estaLogueado() ? true : router.createUrlTree(['/login']);
+};</code></pre>
+      <pre><code>{
+  path: 'admin',
+  canActivate: [authGuard],
+  loadComponent: () =&gt; import('./admin/admin').then((m) =&gt; m.Admin),
+}</code></pre>
+      <p>
+        Devolver un <code>UrlTree</code> es mejor que <code>router.navigate()</code> +
+        <code>false</code>: el router cancela la navegación original y aplica la redirección en una
+        sola operación.
+      </p>
+
+      <h2>2. Cuándo usar cada uno</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Guard</th>
+            <th>Se ejecuta…</th>
+            <th>Uso típico</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>canActivate</code></td>
+            <td>Al entrar en la ruta.</td>
+            <td>Estás logueado.</td>
+          </tr>
+          <tr>
+            <td><code>canMatch</code></td>
+            <td>Antes de cargar el chunk.</td>
+            <td>La ruta ni existe para quien no tiene permiso.</td>
+          </tr>
+          <tr>
+            <td><code>canDeactivate</code></td>
+            <td>Al salir.</td>
+            <td>Hay cambios sin guardar.</td>
+          </tr>
+          <tr>
+            <td><code>resolve</code></td>
+            <td>Antes de activar.</td>
+            <td>Los datos están listos al pintar.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        Con <code>canMatch</code> el bundle ni se descarga: el usuario sin permiso nunca recibe el
+        código del área privada. Es la opción más segura para rutas <em>lazy</em>.
+      </p>
+
+      <h2>3. Guard de datos</h2>
+      <pre><code>export const sinCambiosGuard: CanDeactivateFn&lt;Editor&gt; = (componente) =&gt;
+  componente.tieneCambios() ? confirm('Hay cambios sin guardar. ¿Salir?') : true;</code></pre>
+      <pre><code>{
+  path: 'editor',
+  component: Editor,
+  canDeactivate: [sinCambiosGuard],
+}</code></pre>
+      <p>
+        <code>confirm()</code> es aceptable en un ejercicio; en producción se sustituye por un
+        diálogo propio que devuelva un <code>Promise&lt;boolean&gt;</code>. El guard admite también
+        <code>Observable&lt;boolean&gt;</code>.
+      </p>
+
+      <h2>4. Datos resueltos antes de entrar</h2>
+      <pre><code>export const productoResolver: ResolveFn&lt;Producto&gt; = (ruta) =&gt;
+  inject(ProductosService).detalle(ruta.paramMap.get('id')!);
+
+{
+  path: 'productos/:id',
+  component: ProductoDetalle,
+  resolve: { producto: productoResolver },
+}</code></pre>
+      <p>
+        Con <code>withComponentInputBinding()</code> el resolver llega como input y el componente se
+        pinta ya con datos, sin estado <em>cargando</em>.
+      </p>
+      <div class="warn">
+        <p>
+          Un guard no es seguridad. Todo lo que decide en el navegador se puede saltar: el backend
+          tiene que validar permisos igual. El guard es UX y organización de rutas.
+        </p>
+      </div>
+
+      <h2>5. Ejercicio</h2>
+      <ol class="steps">
+        <li>
+          Crea <code>SesionService</code> con un signal <code>estaLogueado</code> y un botón para
+          entrar y salir.
+        </li>
+        <li>
+          Protege <code>/admin</code> con <code>authGuard</code>. Sin sesión debe redirigir a
+          <code>/login</code>.
+        </li>
+        <li>
+          Cambia el guard a <code>canMatch</code> y comprueba en Network que el chunk de
+          <code>admin</code> no se descarga sin sesión.
+        </li>
+        <li>
+          Añade un formulario con <code>canDeactivate</code>: si hay cambios, pide confirmación
+          antes de salir.
+        </li>
+        <li>
+          Añade un <code>resolve</code> a una ruta de detalle y elimina el estado de carga del
+          componente.
+        </li>
+      </ol>
+
+      <h2>Checklist de cierre</h2>
+      <ul class="check">
+        <li>Build y prettier limpios.</li>
+        <li>Los guards son funciones con <code>inject()</code>, no clases.</li>
+        <li>La redirección se hace devolviendo <code>UrlTree</code>.</li>
+        <li>Sabes explicar por qué el guard no sustituye la validación del backend.</li>
+      </ul>
+
+      <nav class="lesson-nav">
+        <a href="02-lazy-loading.html"><span class="dir">Anterior</span>← 02 · Lazy loading</a>
+        <a href="04-reactive-forms.html"><span class="dir">Siguiente</span>04 · Reactive forms →</a>
+      </nav>
+    </main>
+  </body>
+</html>

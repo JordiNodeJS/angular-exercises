@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>02-templates · Interpolación y bindings</title>
+    <link rel="stylesheet" href="../assets/lesson.css" />
+  </head>
+  <body>
+    <main>
+      <div class="topbar">
+        <nav>
+          <a href="../index.html">← Índice de clases</a>
+          <a href="https://angular.dev/guide/templates">Docs: templates</a>
+        </nav>
+        <span class="crumb">Capítulo 01 · Fundamentals</span>
+      </div>
+
+      <h1>02 · Templates: hablar con el DOM</h1>
+      <p class="lede">
+        Interpolación, property binding, event binding y two-way. Cuatro formas de conectar el
+        estado con la plantilla, y cuándo usar cada una.
+      </p>
+
+      <ul class="chips">
+        <li class="chip chip--accent">Proyecto: ch01-02-templates</li>
+        <li class="chip">Ruta: chapters/01-fundamentals/02-templates</li>
+        <li class="chip">Requiere: 01-hello-world</li>
+      </ul>
+
+      <div class="objective">
+        <strong>Objetivo de la clase</strong>
+        <p>
+          Interpolación, property binding, event binding y two-way. Sin formularios todavía: el
+          two-way se practica con <code>model()</code>, no con <code>ngModel</code>.
+        </p>
+      </div>
+
+      <h2>1. Interpolación</h2>
+      <p>
+        Dobles llaves y una expresión de TypeScript. El resultado se convierte a string y se escapa:
+        no puedes inyectar HTML por aquí.
+      </p>
+      <pre><code>readonly nombre = signal('Ada');
+readonly total = computed(() =&gt; this.precio() * this.cantidad());</code></pre>
+      <pre><code>&lt;p&gt;Hola, {{ nombre() }}&lt;/p&gt;
+&lt;p&gt;Total: {{ total() }} €&lt;/p&gt;
+&lt;p&gt;{{ total() &gt; 100 ? 'Envío gratis' : 'Envío 4,95 €' }}&lt;/p&gt;</code></pre>
+      <div class="note">
+        <p>
+          Los signals se leen con paréntesis: <code>nombre()</code>, no <code>nombre</code>. Olvidar
+          los paréntesis muestra la función en pantalla y no rompe el build.
+        </p>
+      </div>
+
+      <h2>2. Property binding</h2>
+      <p>
+        Corchetes: asignas una <em>propiedad del DOM</em> o un <em>input</em> de un componente hijo.
+        A diferencia de la interpolación, el valor conserva su tipo.
+      </p>
+      <pre><code>&lt;button [disabled]="guardando()"&gt;Guardar&lt;/button&gt;
+&lt;img [ngSrc]="foto().url" [width]="320" [height]="180" alt="" /&gt;
+&lt;input [value]="nombre()" /&gt;
+&lt;div [class.activo]="seleccionado()"&gt;&lt;/div&gt;
+&lt;div [style.max-width.px]="ancho()"&gt;&lt;/div&gt;
+&lt;button [attr.aria-label]="'Cerrar ' + titulo()"&gt;×&lt;/button&gt;</code></pre>
+      <table>
+        <thead>
+          <tr>
+            <th>Sintaxis</th>
+            <th>Cuándo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>[prop]</code></td>
+            <td>Propiedad del elemento o input de componente. Es lo normal.</td>
+          </tr>
+          <tr>
+            <td><code>[attr.x]</code></td>
+            <td>
+              Atributo HTML sin propiedad equivalente (<code>aria-*</code>, <code>colspan</code>).
+            </td>
+          </tr>
+          <tr>
+            <td><code>[class.x]</code> / <code>[style.x]</code></td>
+            <td>
+              Clases y estilos. Sustituyen a <code>ngClass</code> y <code>ngStyle</code>, que aquí
+              están prohibidos.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="warn">
+        <p>
+          <code>[src]</code> directo en <code>&lt;img&gt;</code> compila, pero pierdes la
+          optimización de <code>NgOptimizedImage</code>. Para imágenes estáticas usa
+          <code>ngSrc</code> con <code>width</code> y <code>height</code>.
+        </p>
+      </div>
+
+      <h2>3. Event binding</h2>
+      <p>Paréntesis: escuchas un evento del DOM o un <code>output()</code> de un hijo.</p>
+      <pre><code>&lt;button (click)="guardar()"&gt;Guardar&lt;/button&gt;
+&lt;input (keyup.enter)="buscar()" /&gt;
+&lt;form (submit)="enviar($event)"&gt;&lt;/form&gt;</code></pre>
+      <pre><code>readonly texto = signal('');
+
+alEscribir(event: Event): void {
+  const input = event.target as HTMLInputElement;
+  this.texto.set(input.value);
+}</code></pre>
+      <p>
+        <code>$event</code> está tipado como el evento concreto cuando Angular lo conoce (<code
+          >MouseEvent</code
+        >
+        en <code>click</code>). Aun así, <code>event.target</code> es
+        <code>EventTarget | null</code>: cast o comprobación explícita, nunca <code>any</code>.
+      </p>
+
+      <h2>4. Two-way binding</h2>
+      <p>
+        <code>[(x)]</code> es azúcar de <code>[x]</code> + <code>(xChange)</code>. En un componente
+        hijo se declara con <code>model()</code>:
+      </p>
+      <pre><code>// campo.ts
+import { Component, model } from '@angular/core';
+
+@Component({
+  selector: 'app-campo',
+  template: `&lt;input [value]="valor()" (input)="alEscribir($event)" /&gt;`,
+})
+export class Campo {
+  readonly valor = model('');
+
+  protected alEscribir(event: Event): void {
+    this.valor.set((event.target as HTMLInputElement).value);
+  }
+}</code></pre>
+      <pre><code>&lt;!-- padre --&gt;
+&lt;app-campo [(valor)]="nombre" /&gt;</code></pre>
+      <p>
+        <code>model()</code> crea un signal escribible y el output <code>valorChange</code> a la
+        vez. Si solo necesitas leer, <code>input()</code>; si solo emitir, <code>output()</code>.
+      </p>
+      <div class="note">
+        <p>
+          <code>[(ngModel)]</code> existe pero requiere <code>FormsModule</code> y aquí no se usa:
+          los formularios nuevos van con Signal Forms (<code>@angular/forms/signals</code>) o, como
+          mínimo, Reactive Forms. Nunca template-driven.
+        </p>
+      </div>
+
+      <h2>5. <code>@let</code>: constantes de plantilla</h2>
+      <pre><code>@let precio = producto().precio;
+@let conIva = precio * 1.21;
+
+&lt;p&gt;{{ conIva | currency: 'EUR' }}&lt;/p&gt;</code></pre>
+      <p>
+        Evita repetir expresiones largas tres veces en la misma plantilla. Se recalcula cuando
+        cambia lo que lee, y no existe fuera de su bloque.
+      </p>
+
+      <h2>6. Ejercicio</h2>
+      <ol class="steps">
+        <li>
+          Crea un componente <code>tarjeta-producto</code> con inputs <code>nombre</code>,
+          <code>precio</code> y <code>stock</code>, y muéstralos con interpolación.
+        </li>
+        <li>
+          Añade un botón <em>Comprar</em> con <code>[disabled]="stock() === 0"</code> y otro estado
+          que cambie la clase del contenedor con <code>[class.agotado]</code>.
+        </li>
+        <li>
+          Crea un <code>app-campo</code> con <code>model()</code> y úsalo con
+          <code>[(valor)]</code> desde el padre. Comprueba que el padre se actualiza al escribir.
+        </li>
+        <li>
+          Pinta un contador de caracteres con <code>{{ valor().length }}</code> y comprueba que se
+          refresca sin <code>NgModel</code> ni <code>FormsModule</code>.
+        </li>
+        <li>
+          Cambia el <code>[src]</code> de una imagen por <code>ngSrc</code> y mira qué te exige el
+          compilador.
+        </li>
+      </ol>
+
+      <h2>Checklist de cierre</h2>
+      <ul class="check">
+        <li>Build y prettier limpios.</li>
+        <li>
+          No hay <code>ngClass</code>, <code>ngStyle</code> ni <code>CommonModule</code> importados.
+        </li>
+        <li>Los eventos están tipados sin <code>any</code>.</li>
+        <li>El two-way funciona con <code>model()</code>, no con <code>ngModel</code>.</li>
+      </ul>
+
+      <nav class="lesson-nav">
+        <a href="01-hello-world.html"><span class="dir">Anterior</span>← 01 · Hello world</a>
+        <a href="03-control-flow.html"><span class="dir">Siguiente</span>03 · Control flow →</a>
+      </nav>
+    </main>
+  </body>
+</html>

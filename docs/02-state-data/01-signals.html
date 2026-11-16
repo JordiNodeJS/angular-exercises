@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>01-signals · Estado reactivo</title>
+    <link rel="stylesheet" href="../assets/lesson.css" />
+  </head>
+  <body>
+    <main>
+      <div class="topbar">
+        <nav>
+          <a href="../index.html">← Índice de clases</a>
+          <a href="https://angular.dev/guide/signals">Docs: signals</a>
+        </nav>
+        <span class="crumb">Capítulo 02 · State &amp; Data</span>
+      </div>
+
+      <h1>01 · Signals: el estado por defecto</h1>
+      <p class="lede">
+        Un signal es un valor con notificación de cambio. Angular lo lee durante el render y sabe
+        exactamente qué vista depende de él. Sin zone.js y sin suscripciones.
+      </p>
+
+      <ul class="chips">
+        <li class="chip chip--accent">Proyecto: ch02-01-signals</li>
+        <li class="chip">Ruta: chapters/02-state-data/01-signals</li>
+        <li class="chip">Requiere: capítulo 01</li>
+      </ul>
+
+      <div class="objective">
+        <strong>Objetivo de la clase</strong>
+        <p>
+          <code>signal</code>, <code>computed</code> y <code>effect</code>, más
+          <code>linkedSignal</code> y <code>untracked</code> cuando el caso lo pide. Regla del repo:
+          deriva con <code>computed()</code>, nunca con <code>mutate</code>.
+        </p>
+      </div>
+
+      <h2>1. <code>signal()</code></h2>
+      <pre><code>import { signal } from '@angular/core';
+
+readonly contador = signal(0);
+
+incrementar(): void {
+  this.contador.update((n) =&gt; n + 1);   // depende del valor anterior
+}
+
+reiniciar(): void {
+  this.contador.set(0);                   // valor absoluto
+}</code></pre>
+      <p>
+        Un signal se lee con paréntesis. <code>update</code> recibe una función pura: si el valor
+        nuevo es igual al anterior (<code>Object.is</code>), no hay notificación.
+      </p>
+      <pre><code>// objetos y arrays: siempre inmutables
+readonly tareas = signal&lt;Tarea[]&gt;([]);
+
+anadir(tarea: Tarea): void {
+  this.tareas.update((lista) =&gt; [...lista, tarea]);
+}</code></pre>
+      <div class="warn">
+        <p>
+          <code>.mutate()</code> está deprecado y este repo lo prohíbe: mutar el array no cambia la
+          referencia y los <code>@for</code> / <code>computed</code> no se enteran.
+        </p>
+      </div>
+
+      <h2>2. <code>computed()</code>: estado derivado</h2>
+      <pre><code>readonly tareas = signal&lt;Tarea[]&gt;([]);
+readonly pendientes = computed(() =&gt; this.tareas().filter((t) =&gt; !t.hecha).length);
+readonly progreso = computed(() =&gt; {
+  const total = this.tareas().length;
+  return total === 0 ? 0 : Math.round(((total - this.pendientes()) / total) * 100);
+});</code></pre>
+      <p>
+        Es de solo lectura, se memoiza y se recalcula cuando cambia alguna de sus fuentes. Es
+        <strong>perezoso</strong>: si nadie lo lee, no se calcula.
+      </p>
+      <div class="note">
+        <p>
+          Si te encuentras un <code>effect()</code> que escribe otro signal a partir de otro, casi
+          siempre es un <code>computed()</code> mal escrito.
+        </p>
+      </div>
+
+      <h2>3. <code>effect()</code>: efectos secundarios</h2>
+      <pre><code>import { effect } from '@angular/core';
+
+constructor() {
+  effect((onCleanup) =&gt; {
+    const id = this.seleccionadoId();
+    if (!id) return;
+
+    const sub = this.api.suscribirse(id);
+    onCleanup(() =&gt; sub.unsubscribe());
+  });
+}</code></pre>
+      <table>
+        <thead>
+          <tr>
+            <th>Sí</th>
+            <th>No</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Logging, analytics, localStorage, sincronizar con algo externo.</td>
+            <td>Calcular estado derivado.</td>
+          </tr>
+          <tr>
+            <td>Limpiar con <code>onCleanup</code>.</td>
+            <td>Cambiar signals que otros effects leen (bucles).</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        Corre después del render, en el contexto de inyección. Si necesitas ejecutarlo una vez al
+        arrancar, probablemente quieras <code>afterNextRender()</code>.
+      </p>
+
+      <h2>4. <code>linkedSignal()</code></h2>
+      <p>
+        Un signal escribible que se reinicia cuando cambia su fuente, pero que el usuario puede
+        sobrescribir mientras tanto. El caso clásico: selección por defecto de una lista.
+      </p>
+      <pre><code>readonly ciudades = signal(['Madrid', 'Lisboa', 'Roma']);
+readonly ciudad = linkedSignal(() =&gt; this.ciudades()[0]);
+
+// el usuario puede cambiarla
+this.ciudad.set('Roma');
+// si `ciudades` cambia, `ciudad` vuelve al primer elemento</code></pre>
+      <p>
+        Con <code>computed()</code> no podrías escribir; con <code>signal()</code> +
+        <code>effect()</code> acabarías en un bucle. <code>linkedSignal</code> existe exactamente
+        para esto.
+      </p>
+
+      <h2>5. <code>untracked()</code></h2>
+      <pre><code>readonly resumen = computed(() =&gt; {
+  const filtro = this.filtro();          // sí: dependencia
+  const total = untracked(() =&gt; this.tareas().length); // no: solo lectura puntual
+  return `${filtro}: ${total}`;
+});</code></pre>
+      <p>
+        Lee un signal sin registrar la dependencia. Se usa cuando <em>no</em> quieres que el
+        <code>computed</code> se recalcule por ese valor. Si dudas, no lo uses.
+      </p>
+
+      <h2>6. Ejercicio</h2>
+      <ol class="steps">
+        <li>
+          Modela un carrito: <code>lineas</code> como signal de array, <code>total</code> y
+          <code>unidades</code> como <code>computed()</code>.
+        </li>
+        <li>
+          Implementa añadir, quitar y cambiar cantidad <strong>sin mutar</strong>: siempre
+          <code>set</code> / <code>update</code> con arrays nuevos.
+        </li>
+        <li>
+          Añade un <code>effect()</code> que guarde el carrito en <code>localStorage</code> y
+          recupéralo al arrancar. ¿Dónde va la lectura inicial, en el signal o en el effect?
+        </li>
+        <li>
+          Añade un selector de moneda con <code>linkedSignal()</code> para que la moneda elegida se
+          mantenga mientras no cambie el país.
+        </li>
+        <li>
+          Intenta escribir un <code>computed</code> desde otro y explica el error del compilador.
+        </li>
+      </ol>
+
+      <h2>Checklist de cierre</h2>
+      <ul class="check">
+        <li>Build y prettier limpios.</li>
+        <li>Ni un <code>mutate</code>; todo <code>set</code> / <code>update</code>.</li>
+        <li>
+          Todo lo derivable es <code>computed()</code>; los <code>effect()</code> solo tocan el
+          exterior.
+        </li>
+        <li>El estado vive en el componente o en un servicio, no en variables sueltas.</li>
+      </ul>
+
+      <nav class="lesson-nav">
+        <a href="../01-fundamentals/04-pipes.html"><span class="dir">Anterior</span>← 04 · Pipes</a>
+        <a href="02-services-di.html"><span class="dir">Siguiente</span>02 · Servicios y DI →</a>
+      </nav>
+    </main>
+  </body>
+</html>
