@@ -74,32 +74,34 @@
   &lt;li&gt;No hay tareas.&lt;/li&gt;
 }</code></pre>
       <p>Variables implícitas disponibles dentro del bloque:</p>
-      <table>
-        <thead>
-          <tr>
-            <th>Variable</th>
-            <th>Valor</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>$index</code></td>
-            <td>Posición, desde 0.</td>
-          </tr>
-          <tr>
-            <td><code>$first</code> / <code>$last</code></td>
-            <td>Booleano para el primer y último elemento.</td>
-          </tr>
-          <tr>
-            <td><code>$even</code> / <code>$odd</code></td>
-            <td>Paridad del índice.</td>
-          </tr>
-          <tr>
-            <td><code>$count</code></td>
-            <td>Total de elementos.</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Variable</th>
+              <th>Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>$index</code></td>
+              <td>Posición, desde 0.</td>
+            </tr>
+            <tr>
+              <td><code>$first</code> / <code>$last</code></td>
+              <td>Booleano para el primer y último elemento.</td>
+            </tr>
+            <tr>
+              <td><code>$even</code> / <code>$odd</code></td>
+              <td>Paridad del índice.</td>
+            </tr>
+            <tr>
+              <td><code>$count</code></td>
+              <td>Total de elementos.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <div class="warn">
         <p>
           <code>track</code> decide qué se reutiliza al cambiar la lista. Usa una clave estable
@@ -128,32 +130,34 @@
       </p>
 
       <h2>4. Lo que ya no se escribe</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Antes</th>
-            <th>Ahora</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>*ngIf</code></td>
-            <td><code>@if</code></td>
-          </tr>
-          <tr>
-            <td><code>*ngFor</code> + <code>trackBy</code></td>
-            <td><code>@for</code> + <code>track</code></td>
-          </tr>
-          <tr>
-            <td><code>*ngSwitch</code></td>
-            <td><code>@switch</code></td>
-          </tr>
-          <tr>
-            <td><code>ng-container</code> con directivas</td>
-            <td><code>@if</code> / <code>@for</code> directamente</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Antes</th>
+              <th>Ahora</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>*ngIf</code></td>
+              <td><code>@if</code></td>
+            </tr>
+            <tr>
+              <td><code>*ngFor</code> + <code>trackBy</code></td>
+              <td><code>@for</code> + <code>track</code></td>
+            </tr>
+            <tr>
+              <td><code>*ngSwitch</code></td>
+              <td><code>@switch</code></td>
+            </tr>
+            <tr>
+              <td><code>ng-container</code> con directivas</td>
+              <td><code>@if</code> / <code>@for</code> directamente</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <p>
         El motivo no es estético: los bloques nativos son más rápidos, no necesitan importar
         <code>NgIf</code> ni <code>NgFor</code> y el compilador los valida mejor. Además, las

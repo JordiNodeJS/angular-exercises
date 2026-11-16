@@ -59,28 +59,30 @@
       </p>
 
       <h2>2. Modos de renderizado</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>RenderMode</th>
-            <th>Qué produce</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>Server</code></td>
-            <td>HTML por petición en el servidor. Datos por usuario.</td>
-          </tr>
-          <tr>
-            <td><code>Prerender</code></td>
-            <td>HTML en build. Páginas iguales para todos (SSG).</td>
-          </tr>
-          <tr>
-            <td><code>Client</code></td>
-            <td>CSR clásico. SPA detrás de login, por ejemplo.</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>RenderMode</th>
+              <th>Qué produce</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>Server</code></td>
+              <td>HTML por petición en el servidor. Datos por usuario.</td>
+            </tr>
+            <tr>
+              <td><code>Prerender</code></td>
+              <td>HTML en build. Páginas iguales para todos (SSG).</td>
+            </tr>
+            <tr>
+              <td><code>Client</code></td>
+              <td>CSR clásico. SPA detrás de login, por ejemplo.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <pre><code>// app.routes.server.ts
 import { RenderMode, ServerRoute } from '@angular/ssr';
 
@@ -119,35 +121,37 @@ providers: [
       </div>
 
       <h2>4. Código que rompe en el servidor</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Problema</th>
-            <th>Solución</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>window</code>, <code>document</code>, <code>navigator</code></td>
-            <td><code>inject(DOCUMENT)</code> o ejecutar en <code>afterNextRender()</code>.</td>
-          </tr>
-          <tr>
-            <td><code>localStorage</code> en el constructor</td>
-            <td>Mover a <code>afterNextRender()</code> o a un servicio por plataforma.</td>
-          </tr>
-          <tr>
-            <td><code>@if (isPlatformBrowser())</code> en plantilla</td>
-            <td>CSR y servidor pintan distinto: mismatch. Mantén el HTML igual.</td>
-          </tr>
-          <tr>
-            <td>Peticiones duplicadas</td>
-            <td>
-              <code>HttpClient</code> ya transfiere la caché del servidor al cliente; no la
-              desactives sin motivo.
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Problema</th>
+              <th>Solución</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>window</code>, <code>document</code>, <code>navigator</code></td>
+              <td><code>inject(DOCUMENT)</code> o ejecutar en <code>afterNextRender()</code>.</td>
+            </tr>
+            <tr>
+              <td><code>localStorage</code> en el constructor</td>
+              <td>Mover a <code>afterNextRender()</code> o a un servicio por plataforma.</td>
+            </tr>
+            <tr>
+              <td><code>@if (isPlatformBrowser())</code> en plantilla</td>
+              <td>CSR y servidor pintan distinto: mismatch. Mantén el HTML igual.</td>
+            </tr>
+            <tr>
+              <td>Peticiones duplicadas</td>
+              <td>
+                <code>HttpClient</code> ya transfiere la caché del servidor al cliente; no la
+                desactives sin motivo.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <pre><code>import { Component, ElementRef, afterNextRender, viewChild } from '@angular/core';
 
 export class Panel {

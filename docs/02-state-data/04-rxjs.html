@@ -66,42 +66,44 @@ readonly teclas$: Observable&lt;string&gt; = fromEvent&lt;KeyboardEvent&gt;(docu
       </div>
 
       <h2>2. Los operadores que se usan de verdad</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Operador</th>
-            <th>Para qué</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>map</code></td>
-            <td>Transformar cada valor.</td>
-          </tr>
-          <tr>
-            <td><code>filter</code></td>
-            <td>Descartar valores.</td>
-          </tr>
-          <tr>
-            <td><code>switchMap</code></td>
-            <td>
-              Cambiar a otro stream y <strong>cancelar el anterior</strong>. El de las búsquedas.
-            </td>
-          </tr>
-          <tr>
-            <td><code>catchError</code></td>
-            <td>Convertir un error en un valor o relanzarlo.</td>
-          </tr>
-          <tr>
-            <td><code>debounceTime</code> + <code>distinctUntilChanged</code></td>
-            <td>Esperar a que el usuario pare de escribir y evitar repetidos.</td>
-          </tr>
-          <tr>
-            <td><code>tap</code></td>
-            <td>Efecto lateral de depuración. Se quita antes de cerrar el ejercicio.</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Operador</th>
+              <th>Para qué</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>map</code></td>
+              <td>Transformar cada valor.</td>
+            </tr>
+            <tr>
+              <td><code>filter</code></td>
+              <td>Descartar valores.</td>
+            </tr>
+            <tr>
+              <td><code>switchMap</code></td>
+              <td>
+                Cambiar a otro stream y <strong>cancelar el anterior</strong>. El de las búsquedas.
+              </td>
+            </tr>
+            <tr>
+              <td><code>catchError</code></td>
+              <td>Convertir un error en un valor o relanzarlo.</td>
+            </tr>
+            <tr>
+              <td><code>debounceTime</code> + <code>distinctUntilChanged</code></td>
+              <td>Esperar a que el usuario pare de escribir y evitar repetidos.</td>
+            </tr>
+            <tr>
+              <td><code>tap</code></td>
+              <td>Efecto lateral de depuración. Se quita antes de cerrar el ejercicio.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <p>
         <code>mergeMap</code> no cancela, <code>concatMap</code> encola. Para peticiones disparadas
         por input del usuario, casi siempre quieres <code>switchMap</code>.

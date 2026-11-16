@@ -98,28 +98,30 @@ export class Carrito {
       </p>
 
       <h2>3. Jerarquía de inyectores</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Dónde se declara</th>
-            <th>Alcance</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>providedIn: 'root'</code> / <code>@Service()</code></td>
-            <td>Uno para toda la app.</td>
-          </tr>
-          <tr>
-            <td><code>providers</code> de un componente</td>
-            <td>Una instancia por instancia de ese componente (y sus hijos).</td>
-          </tr>
-          <tr>
-            <td><code>providers</code> de una ruta (<code>loadChildren</code>)</td>
-            <td>Una instancia por ruta cargada.</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Dónde se declara</th>
+              <th>Alcance</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>providedIn: 'root'</code> / <code>@Service()</code></td>
+              <td>Uno para toda la app.</td>
+            </tr>
+            <tr>
+              <td><code>providers</code> de un componente</td>
+              <td>Una instancia por instancia de ese componente (y sus hijos).</td>
+            </tr>
+            <tr>
+              <td><code>providers</code> de una ruta (<code>loadChildren</code>)</td>
+              <td>Una instancia por ruta cargada.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <pre><code>@Component({
   selector: 'app-editor',
   providers: [BorradorService], // instancia local, se destruye con el componente

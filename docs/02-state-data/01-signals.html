@@ -106,24 +106,26 @@ constructor() {
     onCleanup(() =&gt; sub.unsubscribe());
   });
 }</code></pre>
-      <table>
-        <thead>
-          <tr>
-            <th>Sí</th>
-            <th>No</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Logging, analytics, localStorage, sincronizar con algo externo.</td>
-            <td>Calcular estado derivado.</td>
-          </tr>
-          <tr>
-            <td>Limpiar con <code>onCleanup</code>.</td>
-            <td>Cambiar signals que otros effects leen (bucles).</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Sí</th>
+              <th>No</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Logging, analytics, localStorage, sincronizar con algo externo.</td>
+              <td>Calcular estado derivado.</td>
+            </tr>
+            <tr>
+              <td>Limpiar con <code>onCleanup</code>.</td>
+              <td>Cambiar signals que otros effects leen (bucles).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <p>
         Corre después del render, en el contexto de inyección. Si necesitas ejecutarlo una vez al
         arrancar, probablemente quieras <code>afterNextRender()</code>.

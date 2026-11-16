@@ -107,32 +107,34 @@ export class Registro {
       </p>
 
       <h2>3. Validadores</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Validador</th>
-            <th>Comprueba</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>required</code></td>
-            <td>No vacío (incluye <code>null</code>).</td>
-          </tr>
-          <tr>
-            <td><code>email</code></td>
-            <td>Forma de email, no que exista.</td>
-          </tr>
-          <tr>
-            <td><code>minLength</code> / <code>maxLength</code></td>
-            <td>Longitud del string.</td>
-          </tr>
-          <tr>
-            <td><code>pattern</code></td>
-            <td>Regex. Última opción: el mensaje de error es peor.</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Validador</th>
+              <th>Comprueba</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>required</code></td>
+              <td>No vacío (incluye <code>null</code>).</td>
+            </tr>
+            <tr>
+              <td><code>email</code></td>
+              <td>Forma de email, no que exista.</td>
+            </tr>
+            <tr>
+              <td><code>minLength</code> / <code>maxLength</code></td>
+              <td>Longitud del string.</td>
+            </tr>
+            <tr>
+              <td><code>pattern</code></td>
+              <td>Regex. Última opción: el mensaje de error es peor.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <pre><code>function sinEspacios(control: AbstractControl): ValidationErrors | null {
   const valor = control.value as string;
   return valor.includes(' ') ? { sinEspacios: true } : null;

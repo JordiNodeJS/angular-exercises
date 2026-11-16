@@ -1,6 +1,7 @@
 :root {
   color-scheme: dark;
   --bg: #14171b;
+  --bg-alt: #171b20;
   --panel: #1b1f25;
   --fg: #dfe3e8;
   --muted: #9aa4b1;
@@ -9,17 +10,23 @@
   --accent-soft: #2a1d22;
   --code-bg: #101317;
   --ok: #4ec38a;
+  --ok-soft: #13251c;
+  --ok-border: #1f4a35;
   --warn: #e8b64c;
   --warn-soft: #241f12;
   --note-border: #4a2a33;
   --warn-border: #4a3f1e;
   --warn-fg: #efdcb0;
   --toggle-bg: #1b1f25;
+  --step-bg: #1f1620;
+  --step-border: #46283a;
+  --link-underline: #6d3140;
 }
 
 :root[data-theme='light'] {
   color-scheme: light;
   --bg: #fbfaf7;
+  --bg-alt: #ffffff;
   --panel: #ffffff;
   --fg: #1f2328;
   --muted: #5b6672;
@@ -28,12 +35,17 @@
   --accent-soft: #fdeef1;
   --code-bg: #f4f2ed;
   --ok: #14764a;
+  --ok-soft: #eaf6ef;
+  --ok-border: #bfe3cd;
   --warn: #8a5a00;
   --warn-soft: #fdf4e0;
   --note-border: #f3cfd8;
   --warn-border: #eddfb8;
   --warn-fg: #4a3a12;
   --toggle-bg: #ffffff;
+  --step-bg: #fdf3f6;
+  --step-border: #f3cfd8;
+  --link-underline: #e9b3bf;
 }
 
 * {
@@ -46,7 +58,7 @@ html {
 
 body {
   margin: 0;
-  padding: 2.5rem 1.25rem 5rem;
+  padding: 0 1.25rem 5rem;
   background: var(--bg);
   color: var(--fg);
   font:
@@ -62,24 +74,42 @@ body {
 main {
   max-width: 78ch;
   margin: 0 auto;
+  padding-top: 2.5rem;
+}
+
+footer {
+  max-width: 78ch;
+  margin: 3rem auto 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.8rem;
+  color: var(--muted);
 }
 
 a {
   color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: var(--link-underline);
   text-decoration-thickness: 1px;
   text-underline-offset: 2px;
 }
 
 a:hover {
+  text-decoration-color: currentColor;
   text-decoration-thickness: 2px;
 }
 
+::selection {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+/* Barra superior: navegación a la izquierda, toggle a la derecha */
 .topbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem 1rem;
   align-items: center;
-  justify-content: space-between;
   margin-bottom: 2rem;
   font-size: 0.875rem;
 }
@@ -88,29 +118,58 @@ a:hover {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
+  grid-column: 1;
+  grid-row: 1;
 }
 
 .topbar .crumb {
+  grid-column: 1;
+  grid-row: 2;
   color: var(--muted);
+  font-size: 0.8rem;
 }
 
+.topbar .theme-toggle {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+}
+
+/* Títulos */
 h1 {
   font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.2rem);
   line-height: 1.2;
   margin: 0 0 0.5rem;
   letter-spacing: -0.02em;
+  background: linear-gradient(100deg, var(--fg) 20%, var(--accent) 95%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 h2 {
   font-size: 1.3rem;
   margin: 2.5rem 0 0.75rem;
-  padding-bottom: 0.35rem;
+  padding-bottom: 0.4rem;
   border-bottom: 1px solid var(--border);
+  scroll-margin-top: 1rem;
+}
+
+h2::before {
+  content: '';
+  display: inline-block;
+  width: 0.4rem;
+  height: 0.4rem;
+  margin-right: 0.5rem;
+  border-radius: 2px;
+  background: var(--accent);
+  vertical-align: 0.15em;
 }
 
 h3 {
   font-size: 1.05rem;
   margin: 1.75rem 0 0.5rem;
+  scroll-margin-top: 1rem;
 }
 
 p,
@@ -124,6 +183,7 @@ li {
   margin: 0 0 1.25rem;
 }
 
+/* Chips */
 .chips {
   display: flex;
   flex-wrap: wrap;
@@ -134,10 +194,11 @@ li {
 }
 
 .chip {
-  font-size: 0.75rem;
-  letter-spacing: 0.02em;
+  display: inline-block;
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
-  padding: 0.2rem 0.55rem;
+  padding: 0.22rem 0.6rem;
   border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--panel);
@@ -148,33 +209,44 @@ li {
   border-color: transparent;
   background: var(--accent-soft);
   color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--step-border);
 }
 
+/* Objetivo */
 .objective {
+  position: relative;
   background: var(--panel);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
-  border-radius: 6px;
-  padding: 0.9rem 1.1rem;
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  padding: 0.95rem 1.15rem;
   margin: 0 0 2rem;
 }
 
 .objective strong {
-  display: block;
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--accent);
   margin-bottom: 0.35rem;
+}
+
+.objective strong::before {
+  content: '◆';
+  font-size: 0.7rem;
 }
 
 .objective p {
   margin: 0;
 }
 
+/* Notas y avisos */
 .note,
 .warn {
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 0.85rem 1.1rem;
   margin: 1.25rem 0;
   font-size: 0.95rem;
@@ -201,10 +273,12 @@ li {
   margin-bottom: 0;
 }
 
+/* Código */
 pre {
   background: var(--code-bg);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
   padding: 0.9rem 1rem;
   overflow-x: auto;
   margin: 1rem 0;
@@ -234,50 +308,108 @@ pre code {
   padding: 0;
 }
 
+/* Tablas */
+.table-wrap {
+  overflow-x: auto;
+  margin: 1.25rem 0;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
-  margin: 1.25rem 0;
   font-size: 0.925rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+thead th {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-bottom: 1px solid var(--step-border);
 }
 
 th,
 td {
   text-align: left;
-  padding: 0.5rem 0.65rem;
+  padding: 0.55rem 0.7rem;
   border-bottom: 1px solid var(--border);
   vertical-align: top;
 }
 
-th {
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--muted);
+tbody tr:nth-child(even) {
+  background: var(--bg-alt);
 }
 
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+th {
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+td code {
+  white-space: nowrap;
+}
+
+/* Pasos del ejercicio */
 ol.steps {
-  padding-left: 1.35rem;
+  counter-reset: paso;
+  list-style: none;
+  padding-left: 0;
+  margin: 1.25rem 0;
 }
 
 ol.steps > li {
-  margin-bottom: 0.85rem;
+  counter-increment: paso;
+  position: relative;
+  margin-bottom: 0.7rem;
+  padding: 0.7rem 0.9rem 0.7rem 2.9rem;
+  background: var(--step-bg);
+  border: 1px solid var(--step-border);
+  border-radius: 8px;
 }
 
-ol.steps > li::marker {
+ol.steps > li::before {
+  content: counter(paso);
+  position: absolute;
+  left: 0.7rem;
+  top: 0.72rem;
+  width: 1.55rem;
+  height: 1.55rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 0.78rem;
   font-weight: 700;
-  color: var(--accent);
+  line-height: 1;
 }
 
+/* Checklist */
 ul.check {
   list-style: none;
-  padding-left: 0;
+  padding: 0.9rem 1.1rem;
+  margin: 1.25rem 0;
+  background: var(--ok-soft);
+  border: 1px solid var(--ok-border);
+  border-radius: 8px;
 }
 
 ul.check > li {
   position: relative;
   padding-left: 1.75rem;
   margin-bottom: 0.55rem;
+}
+
+ul.check > li:last-child {
+  margin-bottom: 0;
 }
 
 ul.check > li::before {
@@ -289,6 +421,7 @@ ul.check > li::before {
   font-weight: 700;
 }
 
+/* Toggle de tema */
 .theme-toggle {
   display: inline-flex;
   align-items: center;
@@ -331,6 +464,7 @@ ul.check > li::before {
   display: none;
 }
 
+/* Navegación entre clases */
 .lesson-nav {
   display: flex;
   justify-content: space-between;
@@ -345,6 +479,12 @@ ul.check > li::before {
   text-decoration: none;
 }
 
+.lesson-nav a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: var(--link-underline);
+}
+
 .lesson-nav .dir {
   display: block;
   font-size: 0.7rem;
@@ -353,17 +493,19 @@ ul.check > li::before {
   color: var(--muted);
 }
 
-footer {
-  max-width: 78ch;
-  margin: 3rem auto 0;
-  font-size: 0.8rem;
-  color: var(--muted);
+/* Si el navegador no soporta texto con degradado, el h1 no se queda invisible */
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+  h1 {
+    background: none;
+    color: var(--fg);
+  }
 }
 
 @media print {
   :root {
     color-scheme: light;
     --bg: #ffffff;
+    --bg-alt: #ffffff;
     --panel: #ffffff;
     --fg: #1f2328;
     --muted: #5b6672;
@@ -372,11 +514,16 @@ footer {
     --accent-soft: #fdeef1;
     --code-bg: #f4f2ed;
     --ok: #14764a;
+    --ok-soft: #ffffff;
+    --ok-border: #d8d5cf;
     --warn: #8a5a00;
     --warn-soft: #fdf4e0;
     --note-border: #f3cfd8;
     --warn-border: #eddfb8;
     --warn-fg: #4a3a12;
+    --step-bg: #ffffff;
+    --step-border: #d8d5cf;
+    --link-underline: #d8d5cf;
   }
 
   body {
@@ -388,6 +535,11 @@ footer {
   .topbar nav,
   .theme-toggle {
     display: none;
+  }
+
+  h1 {
+    background: none;
+    color: var(--fg);
   }
 
   pre {

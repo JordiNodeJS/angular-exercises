@@ -74,33 +74,35 @@ readonly total = computed(() =&gt; this.precio() * this.cantidad());</code></pre
 &lt;div [class.activo]="seleccionado()"&gt;&lt;/div&gt;
 &lt;div [style.max-width.px]="ancho()"&gt;&lt;/div&gt;
 &lt;button [attr.aria-label]="'Cerrar ' + titulo()"&gt;×&lt;/button&gt;</code></pre>
-      <table>
-        <thead>
-          <tr>
-            <th>Sintaxis</th>
-            <th>Cuándo</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>[prop]</code></td>
-            <td>Propiedad del elemento o input de componente. Es lo normal.</td>
-          </tr>
-          <tr>
-            <td><code>[attr.x]</code></td>
-            <td>
-              Atributo HTML sin propiedad equivalente (<code>aria-*</code>, <code>colspan</code>).
-            </td>
-          </tr>
-          <tr>
-            <td><code>[class.x]</code> / <code>[style.x]</code></td>
-            <td>
-              Clases y estilos. Sustituyen a <code>ngClass</code> y <code>ngStyle</code>, que aquí
-              están prohibidos.
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Sintaxis</th>
+              <th>Cuándo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>[prop]</code></td>
+              <td>Propiedad del elemento o input de componente. Es lo normal.</td>
+            </tr>
+            <tr>
+              <td><code>[attr.x]</code></td>
+              <td>
+                Atributo HTML sin propiedad equivalente (<code>aria-*</code>, <code>colspan</code>).
+              </td>
+            </tr>
+            <tr>
+              <td><code>[class.x]</code> / <code>[style.x]</code></td>
+              <td>
+                Clases y estilos. Sustituyen a <code>ngClass</code> y <code>ngStyle</code>, que aquí
+                están prohibidos.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <div class="warn">
         <p>
           <code>[src]</code> directo en <code>&lt;img&gt;</code> compila, pero pierdes la

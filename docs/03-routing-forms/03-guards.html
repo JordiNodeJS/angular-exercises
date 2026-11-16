@@ -68,37 +68,39 @@ export const authGuard: CanActivateFn = () =&gt; {
       </p>
 
       <h2>2. Cuándo usar cada uno</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Guard</th>
-            <th>Se ejecuta…</th>
-            <th>Uso típico</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>canActivate</code></td>
-            <td>Al entrar en la ruta.</td>
-            <td>Estás logueado.</td>
-          </tr>
-          <tr>
-            <td><code>canMatch</code></td>
-            <td>Antes de cargar el chunk.</td>
-            <td>La ruta ni existe para quien no tiene permiso.</td>
-          </tr>
-          <tr>
-            <td><code>canDeactivate</code></td>
-            <td>Al salir.</td>
-            <td>Hay cambios sin guardar.</td>
-          </tr>
-          <tr>
-            <td><code>resolve</code></td>
-            <td>Antes de activar.</td>
-            <td>Los datos están listos al pintar.</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Guard</th>
+              <th>Se ejecuta…</th>
+              <th>Uso típico</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>canActivate</code></td>
+              <td>Al entrar en la ruta.</td>
+              <td>Estás logueado.</td>
+            </tr>
+            <tr>
+              <td><code>canMatch</code></td>
+              <td>Antes de cargar el chunk.</td>
+              <td>La ruta ni existe para quien no tiene permiso.</td>
+            </tr>
+            <tr>
+              <td><code>canDeactivate</code></td>
+              <td>Al salir.</td>
+              <td>Hay cambios sin guardar.</td>
+            </tr>
+            <tr>
+              <td><code>resolve</code></td>
+              <td>Antes de activar.</td>
+              <td>Los datos están listos al pintar.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <p>
         Con <code>canMatch</code> el bundle ni se descarga: el usuario sin permiso nunca recibe el
         código del área privada. Es la opción más segura para rutas <em>lazy</em>.

@@ -80,32 +80,34 @@ styles-5INURTSO.css | styles        |   0 bytes |                 0 bytes</code>
         <code>outputHashing: 'all'</code> y sin source maps. El build de desarrollo es otro perfil:
       </p>
       <pre><code>pnpm exec ng build ch04-02-build --configuration development</code></pre>
-      <table>
-        <thead>
-          <tr>
-            <th>Opción</th>
-            <th>Qué cambia</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>outputHashing</code></td>
-            <td>Nombre con hash: cache busting. Necesario en producción.</td>
-          </tr>
-          <tr>
-            <td><code>optimization</code></td>
-            <td>Minificado y tree-shaking.</td>
-          </tr>
-          <tr>
-            <td><code>sourceMap</code></td>
-            <td>Solo en desarrollo. En producción expone el código fuente.</td>
-          </tr>
-          <tr>
-            <td><code>budgets</code></td>
-            <td>Umbrales de tamaño: warning y error.</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Opción</th>
+              <th>Qué cambia</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>outputHashing</code></td>
+              <td>Nombre con hash: cache busting. Necesario en producción.</td>
+            </tr>
+            <tr>
+              <td><code>optimization</code></td>
+              <td>Minificado y tree-shaking.</td>
+            </tr>
+            <tr>
+              <td><code>sourceMap</code></td>
+              <td>Solo en desarrollo. En producción expone el código fuente.</td>
+            </tr>
+            <tr>
+              <td><code>budgets</code></td>
+              <td>Umbrales de tamaño: warning y error.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       <h2>4. Presupuestos</h2>
       <pre><code>"budgets": [

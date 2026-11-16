@@ -104,30 +104,32 @@ irAlDetalle(id: string): void {
       </p>
 
       <h2>5. Redirecciones y comodín</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Ruta</th>
-            <th>Efecto</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>''</code> + <code>pathMatch: 'full'</code></td>
-            <td>
-              Redirige solo la URL vacía. Sin <code>full</code>, todo empieza por <code>''</code>.
-            </td>
-          </tr>
-          <tr>
-            <td><code>'**'</code></td>
-            <td>Comodín. Debe ir la última.</td>
-          </tr>
-          <tr>
-            <td><code>redirectTo: 'inicio'</code></td>
-            <td>Cambia la URL en el navegador, no solo la vista.</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Ruta</th>
+              <th>Efecto</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>''</code> + <code>pathMatch: 'full'</code></td>
+              <td>
+                Redirige solo la URL vacía. Sin <code>full</code>, todo empieza por <code>''</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>'**'</code></td>
+              <td>Comodín. Debe ir la última.</td>
+            </tr>
+            <tr>
+              <td><code>redirectTo: 'inicio'</code></td>
+              <td>Cambia la URL en el navegador, no solo la vista.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <div class="warn">
         <p>
           El orden importa: el router gana con la <strong>primera</strong> ruta que encaja. Una ruta

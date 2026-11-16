@@ -122,35 +122,37 @@ readonly usuario = httpResource&lt;Usuario&gt;(
 } @else if (usuario.value(); as u) {
   &lt;h2&gt;{{ u.nombre }}&lt;/h2&gt;
 }</code></pre>
-      <table>
-        <thead>
-          <tr>
-            <th>Señal</th>
-            <th>Qué da</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>value()</code></td>
-            <td>Último valor válido o <code>undefined</code>.</td>
-          </tr>
-          <tr>
-            <td><code>status()</code></td>
-            <td>
-              <code>idle</code> · <code>loading</code> · <code>error</code> ·
-              <code>reloading</code>…
-            </td>
-          </tr>
-          <tr>
-            <td><code>isLoading()</code>, <code>error()</code></td>
-            <td>Atajos para la plantilla.</td>
-          </tr>
-          <tr>
-            <td><code>reload()</code></td>
-            <td>Fuerza otra petición con los mismos parámetros.</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Señal</th>
+              <th>Qué da</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>value()</code></td>
+              <td>Último valor válido o <code>undefined</code>.</td>
+            </tr>
+            <tr>
+              <td><code>status()</code></td>
+              <td>
+                <code>idle</code> · <code>loading</code> · <code>error</code> ·
+                <code>reloading</code>…
+              </td>
+            </tr>
+            <tr>
+              <td><code>isLoading()</code>, <code>error()</code></td>
+              <td>Atajos para la plantilla.</td>
+            </tr>
+            <tr>
+              <td><code>reload()</code></td>
+              <td>Fuerza otra petición con los mismos parámetros.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <p>
         Para peticiones con estado complejo o que necesitan <code>switchMap</code>, sigue teniendo
         sentido RxJS. Para «pinta esto de la API», <code>httpResource</code> ahorra mucho código.

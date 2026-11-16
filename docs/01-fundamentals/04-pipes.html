@@ -61,32 +61,34 @@
 {{ ratio() | number: '1.1-2' }}
 {{ titulo() | titlecase }}
 {{ textoLargo() | slice: 0 : 80 }}</code></pre>
-      <table>
-        <thead>
-          <tr>
-            <th>Pipe</th>
-            <th>Nota</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>date</code></td>
-            <td>Acepta <code>Date</code>, número (ms) o string ISO.</td>
-          </tr>
-          <tr>
-            <td><code>currency</code></td>
-            <td>Depende del locale activo. Por defecto, <code>en-US</code>.</td>
-          </tr>
-          <tr>
-            <td><code>decimal</code></td>
-            <td>El formato <code>1.2-2</code> es «mínimo 1 entero, 2 decimales».</td>
-          </tr>
-          <tr>
-            <td><code>json</code></td>
-            <td>Solo para depurar. Fuera del código final.</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Pipe</th>
+              <th>Nota</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>date</code></td>
+              <td>Acepta <code>Date</code>, número (ms) o string ISO.</td>
+            </tr>
+            <tr>
+              <td><code>currency</code></td>
+              <td>Depende del locale activo. Por defecto, <code>en-US</code>.</td>
+            </tr>
+            <tr>
+              <td><code>decimal</code></td>
+              <td>El formato <code>1.2-2</code> es «mínimo 1 entero, 2 decimales».</td>
+            </tr>
+            <tr>
+              <td><code>json</code></td>
+              <td>Solo para depurar. Fuera del código final.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       <h3>Locale en español</h3>
       <pre><code>// app.config.ts
@@ -163,32 +165,34 @@ export class ResaltarDirective {
       </p>
 
       <h2>5. Pipes frente a computed</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Situación</th>
-            <th>Herramienta</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Formato de presentación (fecha, moneda, número)</td>
-            <td>Pipe</td>
-          </tr>
-          <tr>
-            <td>Transformación de datos con lógica de negocio</td>
-            <td><code>computed()</code> en el componente</td>
-          </tr>
-          <tr>
-            <td>Mismo formato repetido en 5 plantillas</td>
-            <td>Pipe propio</td>
-          </tr>
-          <tr>
-            <td>Filtrar u ordenar una lista</td>
-            <td><code>computed()</code>, no pipe</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Situación</th>
+              <th>Herramienta</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Formato de presentación (fecha, moneda, número)</td>
+              <td>Pipe</td>
+            </tr>
+            <tr>
+              <td>Transformación de datos con lógica de negocio</td>
+              <td><code>computed()</code> en el componente</td>
+            </tr>
+            <tr>
+              <td>Mismo formato repetido en 5 plantillas</td>
+              <td>Pipe propio</td>
+            </tr>
+            <tr>
+              <td>Filtrar u ordenar una lista</td>
+              <td><code>computed()</code>, no pipe</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       <h2>6. Ejercicio</h2>
       <ol class="steps">
