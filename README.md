@@ -63,7 +63,7 @@ Workspace ya creado y con dependencias instaladas:
 
 ```bash
 pnpm install          # solo si clonas el repo en otra máquina
-pnpm exec ng version
+ng version
 ```
 
 > Nota: si algún día hay que rehacer el workspace, `ng new` no puede escribir sobre esta carpeta (ya tiene contenido). Se genera en un temporal con `--create-application=false` y se copian solo los ficheros de raíz.
@@ -71,16 +71,17 @@ pnpm exec ng version
 ## Añadir un ejercicio
 
 ```bash
-pnpm exec ng generate application ch01-01-hello-world \
+ng generate application ch01-01-hello-world \
   --project-root=chapters/01-fundamentals/01-hello-world \
   --minimal --style=css
 
-pnpm exec ng serve ch01-01-hello-world
+ng serve ch01-01-hello-world
 ```
 
 - `--minimal` evita tests: úsalo salvo en el capítulo de testing.
 - Al generar la app, borra el `.gitkeep` de esa carpeta; ya no hace falta.
-- Cada app corre en su propio puerto si lo indicas: `pnpm exec ng serve ch02-01-signals --port 4201`.
+- Cada app corre en su propio puerto si lo indicas: `ng serve ch02-01-signals --port 4201`.
+- Los ejemplos usan `ng` (CLI global). Si prefieres la versión del workspace, el prefijo es `pnpm exec ng`; `ng version` te dice cuál estás ejecutando.
 
 ## Clases
 

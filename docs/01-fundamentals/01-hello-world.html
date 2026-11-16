@@ -61,16 +61,15 @@
         └── 01-hello-world/   ← project-root de la app</code></pre>
 
       <p>Para añadir un ejercicio nuevo (nunca dentro de uno existente):</p>
-      <pre><code>pnpm exec ng generate application ch02-03-http \
+      <pre><code>ng generate application ch02-03-http \
   --project-root=chapters/02-state-data/03-http \
   --style=css --minimal</code></pre>
 
       <div class="note">
         <p>
-          Si tienes <code>@angular/cli</code> instalada en global, el mismo comando se escribe sin
-          <code>pnpm exec</code>: <code>ng generate application ch02-03-http ...</code>. Aquí se
-          mantiene <code>pnpm exec ng</code> porque usa la versión del workspace; con la global
-          comprueba que sea también 22.x con <code>ng version</code>.
+          Los ejemplos usan <code>ng</code> directamente, así que necesitas la CLI en global o
+          recurrir a <code>pnpm exec ng</code>. Con la versión global, comprueba que sea también
+          22.x con <code>ng version</code>.
         </p>
       </div>
 
@@ -192,7 +191,7 @@ export class App {
       <h2>4. Ejercicio</h2>
       <ol class="steps">
         <li>
-          Sirve la app: <code>pnpm exec ng serve ch01-01-hello-world</code> y abre
+          Sirve la app: <code>ng serve ch01-01-hello-world</code> y abre
           <code>http://localhost:4200</code>.
         </li>
         <li>
@@ -215,14 +214,14 @@ export class App {
           veces (<code>NG8001</code>).
         </li>
         <li>
-          Ejecuta <code>pnpm exec ng build ch01-01-hello-world</code> y localiza el bundle en
+          Ejecuta <code>ng build ch01-01-hello-world</code> y localiza el bundle en
           <code>dist/ch01-01-hello-world</code>.
         </li>
       </ol>
 
       <h2>Checklist de cierre</h2>
       <ul class="check">
-        <li><code>pnpm exec ng build ch01-01-hello-world</code> termina sin errores.</li>
+        <li><code>ng build ch01-01-hello-world</code> termina sin errores.</li>
         <li>
           <code
             >pnpm exec prettier --check

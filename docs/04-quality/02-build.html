@@ -41,8 +41,8 @@
       <div class="objective">
         <strong>Objetivo de la clase</strong>
         <p>
-          ESLint + Prettier y <code>pnpm exec ng build</code> en modo producción. Aprender a leer el
-          resumen de bundles y a justificar (o no) una dependencia nueva.
+          ESLint + Prettier y <code>ng build</code> en modo producción. Aprender a leer el resumen
+          de bundles y a justificar (o no) una dependencia nueva.
         </p>
       </div>
 
@@ -63,15 +63,15 @@ pnpm exec prettier --write "chapters/04-quality/02-build/**/*.{ts,html,css}"</co
         ESLint <strong>no</strong> está instalado en este workspace. Instalarlo es una dependencia
         nueva y requiere pedirlo antes; la clase lo explica, el repo no lo añade por su cuenta.
       </p>
-      <pre><code>pnpm exec ng add @angular/eslint</code></pre>
+      <pre><code>ng add @angular/eslint</code></pre>
       <ul class="check">
-        <li>Se ejecuta con <code>pnpm exec ng lint</code>.</li>
+        <li>Se ejecuta con <code>ng lint</code>.</li>
         <li>Las reglas de Angular detectan plantillas mal escritas y APIs deprecadas.</li>
         <li>Un warning no es un error: si lo dejas, deja escrito por qué.</li>
       </ul>
 
       <h2>3. Build de producción</h2>
-      <pre><code>pnpm exec ng build ch04-02-build</code></pre>
+      <pre><code>ng build ch04-02-build</code></pre>
       <pre><code>Initial chunk files | Names         |  Raw size | Estimated transfer size
 main-7IMRXGG7.js    | main          | 190.33 kB |                51.90 kB
 styles-5INURTSO.css | styles        |   0 bytes |                 0 bytes</code></pre>
@@ -79,7 +79,7 @@ styles-5INURTSO.css | styles        |   0 bytes |                 0 bytes</code>
         <code>defaultConfiguration</code> es <code>production</code>: minificado, con
         <code>outputHashing: 'all'</code> y sin source maps. El build de desarrollo es otro perfil:
       </p>
-      <pre><code>pnpm exec ng build ch04-02-build --configuration development</code></pre>
+      <pre><code>ng build ch04-02-build --configuration development</code></pre>
       <div class="table-wrap">
         <table>
           <thead>
@@ -122,11 +122,11 @@ styles-5INURTSO.css | styles        |   0 bytes |                 0 bytes</code>
       </div>
 
       <h2>5. Antes de dar por cerrado un ejercicio</h2>
-      <pre><code>pnpm exec ng build ch04-02-build
+      <pre><code>ng build ch04-02-build
 pnpm exec prettier --check "chapters/04-quality/02-build/**/*.{ts,html,css}"</code></pre>
       <p>
         Si el ejercicio toca routing o formularios, además
-        <code>pnpm exec ng serve ch04-02-build</code> tiene que arrancar sin errores en consola.
+        <code>ng serve ch04-02-build</code> tiene que arrancar sin errores en consola.
       </p>
 
       <h2>6. Ejercicio</h2>

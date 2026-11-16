@@ -48,7 +48,7 @@
       </div>
 
       <h2>1. Generar el ejercicio con tests</h2>
-      <pre><code>pnpm exec ng generate application ch04-01-testing \
+      <pre><code>ng generate application ch04-01-testing \
   --project-root=chapters/04-quality/01-testing \
   --style=css</code></pre>
       <div class="note">
@@ -194,7 +194,7 @@ describe('UsuariosService', () =&gt; {
 
       <h2>Checklist de cierre</h2>
       <ul class="check">
-        <li><code>pnpm exec ng test ch04-01-testing</code> en verde.</li>
+        <li><code>ng test ch04-01-testing</code> en verde.</li>
         <li>Build y prettier limpios.</li>
         <li>Ningún <code>setTimeout</code> en un test: esperas con <code>whenStable</code>.</li>
         <li>Has visto un test fallar a propósito y volver a verde.</li>
