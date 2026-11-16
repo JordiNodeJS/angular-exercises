@@ -1,9 +1,8 @@
 import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
 
 @Component({
-  imports: [RouterOutlet],
-  selector: 'app-root',
+  imports: [],
+  selector: 'super-app',
   styles: `
     :host {
       display: block;
@@ -16,17 +15,27 @@ import { RouterOutlet } from '@angular/router';
       padding: 1rem 1.5rem;
       border-bottom: 1px solid var(--border);
     }
+    main {
+      padding: 1rem 1.5rem;
+      text-align: center;
+    }
   `,
   template: `
     <header>
       <h1>{{ title() }}</h1>
+      <p>Variable normal: {{ normalVar }}</p>
     </header>
 
     <main>
-      <router-outlet />
+      <p>{{ saludo('Don Pinpón') }}</p>
     </main>
   `,
 })
 export class App {
   protected readonly title = signal('Hello world');
+  readonly normalVar = 'hola';
+
+  saludo(nombre: string): string {
+    return `hola, ${nombre}`;
+  }
 }
