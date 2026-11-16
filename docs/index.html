@@ -37,8 +37,9 @@
         <strong>Antes de empezar</strong>
         <p>
           <code>pnpm install</code> y un ejercicio generado. Los comandos usan
-          <code>pnpm exec</code>; nunca <code>npm</code> ni <code>yarn</code>. El estado real de
-          cada ejercicio vive en el <a href="../README.md">README</a> y en Notion, no aquí.
+          <code>pnpm exec</code>, que ejecuta la CLI del workspace; nunca <code>npm</code> ni
+          <code>yarn</code>. El estado real de cada ejercicio vive en el
+          <a href="../README.md">README</a> y en Notion, no aquí.
         </p>
       </div>
 
@@ -215,6 +216,17 @@
 pnpm exec ng serve ch01-01-hello-world
 pnpm exec ng build ch01-01-hello-world
 pnpm exec prettier --check "chapters/**/*.{ts,html,css}"</code></pre>
+
+      <div class="note">
+        <p>
+          <strong>¿Tienes <code>@angular/cli</code> instalada en global?</strong> Entonces puedes
+          omitir <code>pnpm exec</code> y escribir <code>ng serve</code>, <code>ng build</code> o
+          <code>ng g app</code> directamente. El repo sigue recomendando
+          <code>pnpm exec ng</code> porque usa la versión fijada en
+          <code>package.json</code> (22.2.x); la global puede ser otra. Compruébalo con
+          <code>ng version</code>.
+        </p>
+      </div>
     </main>
 
     <footer>
