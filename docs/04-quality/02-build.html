@@ -14,6 +14,16 @@
           <a href="https://angular.dev/cli/build">Docs: ng build</a>
         </nav>
         <span class="crumb">Capítulo 04 · Quality</span>
+        <button
+          class="theme-toggle"
+          type="button"
+          aria-pressed="false"
+          aria-label="Cambiar a tema claro"
+          title="Tema oscuro"
+        >
+          <span class="icon-moon" aria-hidden="true">☾</span>
+          <span class="icon-sun" aria-hidden="true">☀</span>
+        </button>
       </div>
 
       <h1>02 · Lint y build de producción</h1>
@@ -153,5 +163,6 @@ pnpm exec prettier --check "chapters/04-quality/02-build/**/*.{ts,html,css}"</co
         <a href="03-ssr.html"><span class="dir">Siguiente</span>03 · SSR →</a>
       </nav>
     </main>
+    <script src="../assets/theme.js"></script>
   </body>
 </html>
