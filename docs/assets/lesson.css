@@ -188,7 +188,7 @@ li {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
-  margin: 0 0 1.5rem;
+  margin: 0 0 0.55rem;
   padding: 0;
   list-style: none;
 }
@@ -210,6 +210,35 @@ li {
   background: var(--accent-soft);
   color: var(--accent);
   box-shadow: inset 0 0 0 1px var(--step-border);
+}
+
+/* Línea de arranque: comando y puerto */
+.arranque {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0 0 1.75rem;
+  font-size: 0.9rem;
+  color: var(--fg);
+}
+
+.arranque strong {
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.arranque .puerto {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.arranque .puerto::before {
+  content: '·';
+  margin-right: 0.45rem;
+  color: var(--border);
 }
 
 /* Objetivo */
