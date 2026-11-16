@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>02-websockets · Streams que empuja el servidor</title>
+    <link rel="stylesheet" href="../assets/lesson.css" />
+  </head>
+  <body>
+    <main>
+      <div class="topbar">
+        <nav>
+          <a href="../index.html">← Índice de clases</a>
+          <a href="https://rxjs.dev/guide/subject">Docs: rxjs subjects</a>
+        </nav>
+        <span class="crumb">Capítulo 05 · Async &amp; Streams</span>
+        <button
+          class="theme-toggle"
+          type="button"
+          aria-pressed="false"
+          aria-label="Cambiar a tema claro"
+          title="Tema oscuro"
+        >
+          <span class="icon-moon" aria-hidden="true">☾</span>
+          <span class="icon-sun" aria-hidden="true">☀</span>
+        </button>
+      </div>
+
+      <h1>02 · WebSockets: el servidor manda, el stream recibe</h1>
+      <p class="lede">
+        HTTP es petición y respuesta. Un socket es una tubería abierta: el servidor empuja cuando
+        quiere. Eso encaja con un <code>Subject</code>, no con un signal.
+      </p>
+
+      <ul class="chips">
+        <li class="chip chip--accent">Proyecto: ch05-02-websockets</li>
+        <li class="chip">Ruta: chapters/05-async-streams/02-websockets</li>
+        <li class="chip">Requiere: 02-04-rxjs</li>
+      </ul>
+
+      <p class="arranque">
+        <strong>Arranca:</strong> <code>ng serve ch05-02-websockets</code>
+        <span class="puerto">localhost:4200</span>
+      </p>
+
+      <div class="objective">
+        <strong>Objetivo de la clase</strong>
+        <p>
+          <code>Subject</code>, <code>BehaviorSubject</code>, <code>scan</code> y reconexión con
+          backoff. Y lo más importante: cerrar el socket cuando el componente desaparece.
+        </p>
+      </div>
+
+      <h2>1. Qué cambia respecto a HTTP</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>HTTP</th>
+            <th>WebSocket</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Empiezas tú.</td>
+            <td>Empieza el servidor cuando hay novedades.</td>
+          </tr>
+          <tr>
+            <td>Una respuesta por petición.</td>
+            <td>Mensajes indefinidos sobre la misma conexión.</td>
+          </tr>
+          <tr>
+            <td><code>HttpClient</code> resuelve la cancelación.</td>
+            <td>La cancelación la pones tú: <code>socket.close()</code>.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>2. Subject y sus variantes</h2>
+      <p>
+        Un <code>Subject</code> es a la vez Observable y Observer: puedes subscribirte y también
+        hacer <code>next()</code>.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Tipo</th>
+            <th>Qué recuerda</th>
+            <th>Uso</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>Subject</code></td>
+            <td>Nada.</td>
+            <td>Eventos que solo importan a quien está conectado: mensajes de chat.</td>
+          </tr>
+          <tr>
+            <td><code>BehaviorSubject</code></td>
+            <td>El último valor y uno inicial.</td>
+            <td>Estado actual: conexión abierta o cerrada.</td>
+          </tr>
+          <tr>
+            <td><code>ReplaySubject(n)</code></td>
+            <td>Los últimos <em>n</em> valores.</td>
+            <td>Buffers cortos que un componente que llega tarde necesita.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>3. Envolver el socket</h2>
+      <pre><code>import { Service, inject } from '@angular/core';
+import { Observable, Subject } from 'rxjs';
+
+export interface Mensaje {
+  tipo: 'chat' | 'sistema';
+  texto: string;
+}
+
+@Service()
+export class ChatService {
+  private readonly url = inject(API_URL);
+  private readonly entrantes = new Subject&lt;Mensaje&gt;();
+  private socket: WebSocket | null = null;
+
+  readonly mensajes: Observable&lt;Mensaje&gt; = this.entrantes.asObservable();
+
+  conectar(): void {
+    this.socket = new WebSocket(this.url);
+
+    this.socket.addEventListener('message', (evento) =&gt; {
+      const data = JSON.parse((evento as MessageEvent).data) as Mensaje;
+      this.entrantes.next(data);
+    });
+
+    this.socket.addEventListener('close', () =&gt; {
+      this.socket = null;
+      this.entrantes.complete();
+    });
+  }
+
+  enviar(texto: string): void {
+    this.socket?.send(JSON.stringify({ tipo: 'chat', texto } satisfies Mensaje));
+  }
+
+  cerrar(): void {
+    this.socket?.close();
+  }
+}</code></pre>
+      <div class="note">
+        <p>
+          <code>asObservable()</code> expone solo la parte de lectura: los componentes pueden
+          suscribirse pero no hacer <code>next()</code>. El socket es del servicio.
+        </p>
+      </div>
+
+      <h2>4. Reconexión con backoff</h2>
+      <p>
+        El servidor se cae, la red cambia, el portátil duerme. Sin reconexión el chat se queda mudo.
+        Se resuelve con un Observable que reintenta:
+      </p>
+      <pre><code>import { Observable, retry, timer } from 'rxjs';
+
+function conectar(url: string): Observable&lt;Mensaje&gt; {
+  return new Observable&lt;Mensaje&gt;((suscriptor) =&gt; {
+    const socket = new WebSocket(url);
+
+    socket.addEventListener('message', (e) =&gt;
+      suscriptor.next(JSON.parse((e as MessageEvent).data) as Mensaje),
+    );
+    socket.addEventListener('close', () =&gt; suscriptor.complete());
+
+    return () =&gt; socket.close();
+  }).pipe(
+    retry({
+      count: 5,
+      delay: (intento) =&gt; timer(Math.min(1000 * 2 ** intento, 30_000)),
+    }),
+  );
+}</code></pre>
+      <p>
+        El <code>delay</code> exponencial evita ametrallar el servidor: 1 s, 2 s, 4 s, 8 s… con tope
+        de 30 s. El <code>return () =&gt; socket.close()</code> es la limpieza: se ejecuta al
+        desuscribirse o al cancelar.
+      </p>
+
+      <h2>5. Cerrar al salir</h2>
+      <p>
+        El socket no se cierra solo. Si el componente que lo abrió desaparece, alguien tiene que
+        llamar a <code>cerrar()</code>:
+      </p>
+      <pre><code>import { DestroyRef, inject } from '@angular/core';
+
+export class Chat {
+  private readonly chat = inject(ChatService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  constructor() {
+    this.chat.conectar();
+
+    this.destroyRef.onDestroy(() =&gt; this.chat.cerrar());
+  }
+}</code></pre>
+      <p>
+        <code>DestroyRef</code> es la forma moderna de <code>ngOnDestroy</code>: se registra el
+        callback y Angular lo ejecuta al destruir el componente. Si no lo haces, la conexión sigue
+        abierta y el servidor envía mensajes que ya nadie lee.
+      </p>
+      <p>
+        Y si los mensajes se consumen con <code>toSignal()</code>, la desuscripción es automática;
+        lo que <em>no</em> es automático es el <code>socket.close()</code>.
+      </p>
+      <div class="warn">
+        <p>
+          Un socket abierto es una suscripción que no termina por sí sola. En una SPA con router,
+          olvidar el <code>close()</code> acumula conexiones en cada navegación.
+        </p>
+      </div>
+
+      <h2>6. Ejercicio</h2>
+      <ol class="steps">
+        <li>
+          Crea un <code>ChatService</code> con <code>Subject</code>, <code>conectar()</code> y
+          <code>enviar()</code>.
+        </li>
+        <li>Pinta los mensajes con <code>scan</code> para ir acumulándolos en un signal.</li>
+        <li>
+          Añade un <code>BehaviorSubject&lt;boolean&gt;</code> de conexión y muestra «conectado» o
+          «reconectando».
+        </li>
+        <li>
+          Implementa la reconexión con <code>retry</code> y backoff exponencial. Comprueba que no
+          satura la consola.
+        </li>
+        <li>Navega a otra ruta y vuelve: el socket anterior tiene que estar cerrado.</li>
+      </ol>
+
+      <h2>Checklist de cierre</h2>
+      <ul class="check">
+        <li>Build y prettier limpios.</li>
+        <li>El socket se cierra al destruir el componente o el servicio.</li>
+        <li>La reconexión tiene backoff y un número máximo de intentos.</li>
+        <li>Ningún componente hace <code>next()</code> sobre el Subject del servicio.</li>
+      </ul>
+
+      <nav class="lesson-nav">
+        <a href="01-http-cancel.html"
+          ><span class="dir">Anterior</span>← 01 · HTTP con cancelación</a
+        >
+        <a href="03-signals-vs-rxjs.html"
+          ><span class="dir">Siguiente</span>03 · Signals vs RxJS →</a
+        >
+      </nav>
+    </main>
+    <script src="../assets/theme.js"></script>
+  </body>
+</html>

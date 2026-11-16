@@ -23,6 +23,15 @@
   "references": [
     {
       "path": "./chapters/01-fundamentals/01-hello-world/tsconfig.app.json"
+    },
+    {
+      "path": "./chapters/05-async-streams/01-http-cancel/tsconfig.app.json"
+    },
+    {
+      "path": "./chapters/05-async-streams/02-websockets/tsconfig.app.json"
+    },
+    {
+      "path": "./chapters/05-async-streams/03-signals-vs-rxjs/tsconfig.app.json"
     }
   ]
 }

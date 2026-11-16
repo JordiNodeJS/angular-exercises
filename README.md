@@ -22,10 +22,14 @@ angular-exercises/
 │   │   ├── 02-lazy-loading/
 │   │   ├── 03-guards/
 │   │   └── 04-reactive-forms/
-│   └── 04-quality/
-│       ├── 01-testing/
-│       ├── 02-build/
-│       └── 03-ssr/
+│   ├── 04-quality/
+│   │   ├── 01-testing/
+│   │   ├── 02-build/
+│   │   └── 03-ssr/
+│   └── 05-async-streams/
+│       ├── 01-http-cancel/
+│       ├── 02-websockets/
+│       └── 03-signals-vs-rxjs/
 ├── docs/              ← clases de estudio en HTML (una por ejercicio)
 └── shared/            (opcional, librería común)
 ```
@@ -101,22 +105,25 @@ start docs/index.html          # Windows
 
 ## Progreso
 
-| Chapter          | Exercise          | Status      |
-| ---------------- | ----------------- | ----------- |
-| 01-fundamentals  | 01-hello-world    | In progress |
-| 01-fundamentals  | 02-templates      | Not started |
-| 01-fundamentals  | 03-control-flow   | Not started |
-| 01-fundamentals  | 04-pipes          | Not started |
-| 02-state-data    | 01-signals        | Not started |
-| 02-state-data    | 02-services-di    | Not started |
-| 02-state-data    | 03-http           | Not started |
-| 02-state-data    | 04-rxjs           | Not started |
-| 03-routing-forms | 01-router         | Not started |
-| 03-routing-forms | 02-lazy-loading   | Not started |
-| 03-routing-forms | 03-guards         | Not started |
-| 03-routing-forms | 04-reactive-forms | Not started |
-| 04-quality       | 01-testing        | Not started |
-| 04-quality       | 02-build          | Not started |
-| 04-quality       | 03-ssr            | Not started |
+| Chapter          | Exercise           | Status      |
+| ---------------- | ------------------ | ----------- |
+| 01-fundamentals  | 01-hello-world     | In progress |
+| 01-fundamentals  | 02-templates       | Not started |
+| 01-fundamentals  | 03-control-flow    | Not started |
+| 01-fundamentals  | 04-pipes           | Not started |
+| 02-state-data    | 01-signals         | Not started |
+| 02-state-data    | 02-services-di     | Not started |
+| 02-state-data    | 03-http            | Not started |
+| 02-state-data    | 04-rxjs            | Not started |
+| 03-routing-forms | 01-router          | Not started |
+| 03-routing-forms | 02-lazy-loading    | Not started |
+| 03-routing-forms | 03-guards          | Not started |
+| 03-routing-forms | 04-reactive-forms  | Not started |
+| 04-quality       | 01-testing         | Not started |
+| 04-quality       | 02-build           | Not started |
+| 04-quality       | 03-ssr             | Not started |
+| 05-async-streams | 01-http-cancel     | In progress |
+| 05-async-streams | 02-websockets      | Not started |
+| 05-async-streams | 03-signals-vs-rxjs | Not started |
 
 Plan completo: Notion → Self-Taught → "Angular — Roadmap y tutorial".

@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>03-signals-vs-rxjs · Cuándo usar cada uno</title>
+    <link rel="stylesheet" href="../assets/lesson.css" />
+  </head>
+  <body>
+    <main>
+      <div class="topbar">
+        <nav>
+          <a href="../index.html">← Índice de clases</a>
+          <a href="https://angular.dev/guide/signals">Docs: signals</a>
+        </nav>
+        <span class="crumb">Capítulo 05 · Async &amp; Streams</span>
+        <button
+          class="theme-toggle"
+          type="button"
+          aria-pressed="false"
+          aria-label="Cambiar a tema claro"
+          title="Tema oscuro"
+        >
+          <span class="icon-moon" aria-hidden="true">☾</span>
+          <span class="icon-sun" aria-hidden="true">☀</span>
+        </button>
+      </div>
+
+      <h1>03 · Signals y RxJS: dos modelos, no una moda</h1>
+      <p class="lede">
+        Los signals resuelven el estado síncrono de la vista y por eso desplazaron a RxJS en el día
+        a día. Pero RxJS sigue siendo la herramienta para el tiempo: eventos, cancelación y flujos
+        que empujan.
+      </p>
+
+      <ul class="chips">
+        <li class="chip chip--accent">Proyecto: ch05-03-signals-vs-rxjs</li>
+        <li class="chip">Ruta: chapters/05-async-streams/03-signals-vs-rxjs</li>
+        <li class="chip">Requiere: 02-01-signals y 02-04-rxjs</li>
+      </ul>
+
+      <p class="arranque">
+        <strong>Arranca:</strong> <code>ng serve ch05-03-signals-vs-rxjs</code>
+        <span class="puerto">localhost:4200</span>
+      </p>
+
+      <div class="objective">
+        <strong>Objetivo de la clase</strong>
+        <p>
+          Una regla de decisión clara, el puente entre los dos mundos (<code>toSignal</code> /
+          <code>toObservable</code>) y los errores que se repiten al mezclar ambos modelos.
+        </p>
+      </div>
+
+      <h2>1. Dos formas de pensar</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Signals</th>
+            <th>RxJS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Tiras del valor: lo lees cuando lo necesitas.</td>
+            <td>El valor te empuja: te enteras cuando cambia.</td>
+          </tr>
+          <tr>
+            <td>El estado es el centro.</td>
+            <td>El flujo de eventos es el centro.</td>
+          </tr>
+          <tr>
+            <td>Derivar es <code>Computed</code>.</td>
+            <td>Transformar es un operador.</td>
+          </tr>
+          <tr>
+            <td>No hay cancelación.</td>
+            <td>Cancelar es una operación más.</td>
+          </tr>
+          <tr>
+            <td>Perfecto para la vista.</td>
+            <td>Perfecto para el tiempo.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>2. La regla de decisión</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Situación</th>
+            <th>Herramienta</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Estado de la vista (contador, formulario, tildes)</td>
+            <td><code>signal()</code> / <code>computed()</code></td>
+          </tr>
+          <tr>
+            <td>Un dato de API que se pinta tal cual</td>
+            <td><code>httpResource()</code> o <code>toSignal()</code></td>
+          </tr>
+          <tr>
+            <td>Eventos rápidos y repetidos (input, scroll, resize)</td>
+            <td>RxJS: <code>debounceTime</code>, <code>switchMap</code></td>
+          </tr>
+          <tr>
+            <td>Peticiones que deben cancelarse</td>
+            <td>RxJS con <code>switchMap</code></td>
+          </tr>
+          <tr>
+            <td>Conexiones persistentes (WebSocket, SSE)</td>
+            <td>RxJS con <code>Subject</code> y limpieza manual</td>
+          </tr>
+          <tr>
+            <td>Compartir estado entre componentes</td>
+            <td>Servicio con signals privados y lectura <code>asReadonly()</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>3. El puente: <code>toSignal</code> y <code>toObservable</code></h2>
+      <p>La frontera normal es: RxJS dentro del servicio, signals en el componente.</p>
+      <pre><code>import { toSignal } from '@angular/core/rxjs-interop';
+
+readonly usuarios = toSignal(this.usuariosService.listar(), {
+  initialValue: [] as Usuario[],
+});</code></pre>
+      <p>En sentido contrario, cuando un operador tiene que reaccionar a un signal:</p>
+      <pre><code>import { toObservable } from '@angular/core/rxjs-interop';
+
+readonly busqueda = signal('');
+
+readonly resultados = toObservable(this.busqueda).pipe(
+  debounceTime(300),
+  distinctUntilChanged(),
+  switchMap((texto) =&gt; this.http.get&lt;Resultado[]&gt;('/api/buscar', { params: { q: texto } })),
+);</code></pre>
+      <div class="note">
+        <p>
+          <code>toSignal()</code> se desuscribe al destruir el contexto de inyección. Es la razón
+          por la que no necesitas <code>takeUntilDestroyed</code> cuando trabajas en el borde.
+        </p>
+      </div>
+
+      <h2>4. Tres formas de traer datos de API</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Forma</th>
+            <th>Cuándo</th>
+            <th>Coste</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>httpResource()</code></td>
+            <td>Un recurso reactivo ligado a un signal de entrada.</td>
+            <td>Código mínimo; estado de carga y error incluidos.</td>
+          </tr>
+          <tr>
+            <td><code>toSignal(http.get(...))</code></td>
+            <td>Una petición puntual al arrancar.</td>
+            <td>Un signal; sin estado de recarga.</td>
+          </tr>
+          <tr>
+            <td><code>resource()</code></td>
+            <td>Datos asíncronos con <code>async</code> propio.</td>
+            <td>Más control; necesitas un <code>loader</code>.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>5. Errores al mezclar</h2>
+      <ul>
+        <li>
+          <strong>Un <code>effect()</code> que escribe otro signal.</strong> Casi siempre es un
+          <code>computed()</code>.
+        </li>
+        <li>
+          <strong>Pasar a signal demasiado pronto.</strong> Si conviertes la búsqueda a
+          <code>toSignal</code> antes del <code>debounceTime</code>, pierdes la cancelación.
+        </li>
+        <li>
+          <strong><code>subscribe()</code> sin limpieza.</strong> En el borde usa
+          <code>toSignal</code>; si no, <code>takeUntilDestroyed</code>.
+        </li>
+        <li>
+          <strong>RxJS para estado síncrono.</strong> Un <code>BehaviorSubject</code> para un
+          contador es más código que un <code>signal</code> y peor rendimiento.
+        </li>
+      </ul>
+
+      <h2>6. Ejercicio</h2>
+      <ol class="steps">
+        <li>Crea un contador con <code>signal()</code> y <code>computed()</code>. Sin RxJS.</li>
+        <li>
+          Añade un buscador con <code>toObservable</code>, <code>debounceTime</code> y
+          <code>switchMap</code>, y trae el resultado a un signal con <code>toSignal</code>.
+        </li>
+        <li>
+          Haz la misma petición con <code>httpResource</code> y compara el código y los estados de
+          carga.
+        </li>
+        <li>
+          Escribe un <code>effect()</code> que solo haga <em>logging</em>. Comprueba que no necesita
+          escribir ningún signal.
+        </li>
+        <li>Decide en un párrafo qué herramienta usarías para un chat en vivo y por qué.</li>
+      </ol>
+
+      <h2>Checklist de cierre</h2>
+      <ul class="check">
+        <li>Build y prettier limpios.</li>
+        <li>
+          Sin <code>subscribe()</code> sin <code>takeUntilDestroyed</code> ni <code>toSignal</code>.
+        </li>
+        <li>Los <code>effect()</code> no escriben signals.</li>
+        <li>Sabes justificar la elección entre signal y RxJS en cada caso del ejercicio.</li>
+      </ul>
+
+      <nav class="lesson-nav">
+        <a href="02-websockets.html"><span class="dir">Anterior</span>← 02 · WebSockets</a>
+        <a href="../index.html"><span class="dir">Fin del capítulo</span>Volver al índice</a>
+      </nav>
+    </main>
+    <script src="../assets/theme.js"></script>
+  </body>
+</html>

@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>01-http-cancel · Peticiones que se cancelan</title>
+    <link rel="stylesheet" href="../assets/lesson.css" />
+  </head>
+  <body>
+    <main>
+      <div class="topbar">
+        <nav>
+          <a href="../index.html">← Índice de clases</a>
+          <a href="https://rxjs.dev/guide/operators">Docs: rxjs operators</a>
+        </nav>
+        <span class="crumb">Capítulo 05 · Async &amp; Streams</span>
+        <button
+          class="theme-toggle"
+          type="button"
+          aria-pressed="false"
+          aria-label="Cambiar a tema claro"
+          title="Tema oscuro"
+        >
+          <span class="icon-moon" aria-hidden="true">☾</span>
+          <span class="icon-sun" aria-hidden="true">☀</span>
+        </button>
+      </div>
+
+      <h1>01 · HTTP con cancelación: el caso donde RxJS sigue ganando</h1>
+      <p class="lede">
+        Un buscador que dispara una petición por tecla es el ejemplo de manual: la petición anterior
+        ya no sirve y hay que cancelarla. Eso lo hace <code>switchMap</code>, no un signal.
+      </p>
+
+      <ul class="chips">
+        <li class="chip chip--accent">Proyecto: ch05-01-http-cancel</li>
+        <li class="chip">Ruta: chapters/05-async-streams/01-http-cancel</li>
+        <li class="chip">Requiere: 02-03-http y 02-04-rxjs</li>
+      </ul>
+
+      <p class="arranque">
+        <strong>Arranca:</strong> <code>ng serve ch05-01-http-cancel</code>
+        <span class="puerto">localhost:4200</span>
+      </p>
+
+      <div class="objective">
+        <strong>Objetivo de la clase</strong>
+        <p>
+          <code>debounceTime</code>, <code>distinctUntilChanged</code>, <code>switchMap</code> y
+          <code>takeUntilDestroyed</code>. Al terminar sabes por qué una búsqueda reactiva no se
+          resuelve con <code>computed()</code> ni con un <code>effect()</code>.
+        </p>
+      </div>
+
+      <h2>1. El problema</h2>
+      <p>
+        Escribes «a», «ab», «abc» en tres decimas de segundo. Sin cancelación salen tres peticiones
+        y la última en responder puede ser la de «a»: la interfaz muestra un resultado que no
+        corresponde a lo que hay en el input.
+      </p>
+      <p>
+        Con un signal suelto no tienes forma de cancelar la petición anterior. Necesitas un stream.
+      </p>
+
+      <h2>2. La cadena completa</h2>
+      <pre><code>import { toSignal } from '@angular/core/rxjs-interop';
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
+
+readonly resultados = toSignal(
+  this.busqueda.valueChanges.pipe(
+    debounceTime(300),
+    distinctUntilChanged(),
+    switchMap((texto) =&gt; this.http.get&lt;Resultado[]&gt;('/api/buscar', { params: { q: texto } })),
+  ),
+  { initialValue: [] as Resultado[] },
+);</code></pre>
+      <p>Cada operador resuelve una parte:</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Operador</th>
+            <th>Sin él</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>debounceTime(300)</code></td>
+            <td>Una petición por tecla.</td>
+          </tr>
+          <tr>
+            <td><code>distinctUntilChanged()</code></td>
+            <td>Repite la búsqueda si borras y vuelves a escribir lo mismo.</td>
+          </tr>
+          <tr>
+            <td><code>switchMap</code></td>
+            <td>Respuestas fuera de orden: gana la última en llegar, no la última pedida.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="note">
+        <p>
+          <code>switchMap</code> cancela la petición anterior de verdad: <code>HttpClient</code> usa
+          <code>AbortController</code> por debajo, así que la petición se aborta en el navegador. No
+          es solo descartar la respuesta.
+        </p>
+      </div>
+
+      <h2>3. <code>switchMap</code> frente a sus hermanos</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Operador</th>
+            <th>Qué hace con el stream anterior</th>
+            <th>Cuándo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>switchMap</code></td>
+            <td>Lo cancela.</td>
+            <td>Búsquedas, autocomplete, navegar a un detalle.</td>
+          </tr>
+          <tr>
+            <td><code>mergeMap</code></td>
+            <td>Lo deja correr.</td>
+            <td>Eventos independientes que sí quieres todos (analytics).</td>
+          </tr>
+          <tr>
+            <td><code>concatMap</code></td>
+            <td>Lo encola.</td>
+            <td>Orden estricto, por ejemplo guardar en secuencia.</td>
+          </tr>
+          <tr>
+            <td><code>exhaustMap</code></td>
+            <td>Ignora los nuevos mientras trabaja.</td>
+            <td>Botón de guardar: un clic por operación.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>4. Errores y reintentos</h2>
+      <pre><code>import { catchError, of, retry, timer } from 'rxjs';
+
+this.http.get&lt;Usuario&gt;('/api/usuario').pipe(
+  retry({ count: 2, delay: 1000 }),
+  catchError(() =&gt; of(this.usuarioPorDefecto)),
+);</code></pre>
+      <p>
+        <code>retry</code> vuelve a suscribirse al mismo Observable. Ojo: reintenta también los
+        errores de negocio (404, 403), que no van a cambiar. Para eso, filtra por código antes.
+      </p>
+
+      <h2>5. Cancelar al destruir el componente</h2>
+      <p>
+        <code>toSignal()</code> ya se desuscribe al destruir el componente. Si te suscribes a mano:
+      </p>
+      <pre><code>import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
+constructor() {
+  this.estado$.pipe(takeUntilDestroyed()).subscribe((estado) =&gt; this.estado.set(estado));
+}</code></pre>
+      <div class="warn">
+        <p>
+          Un <code>.subscribe()</code> sin <code>takeUntilDestroyed</code> sigue vivo después de
+          navegar a otra ruta. Es la fuga más común en apps con streams.
+        </p>
+      </div>
+
+      <h2>6. Ejercicio</h2>
+      <ol class="steps">
+        <li>
+          Monta un buscador con <code>debounceTime(300)</code> y <code>switchMap</code> contra una
+          API pública (por ejemplo <code>api.github.com/search/users</code>).
+        </li>
+        <li>
+          Añade <code>distinctUntilChanged()</code> y comprueba que no repite la búsqueda al borrar
+          y reescribir.
+        </li>
+        <li>
+          Muestra un estado «buscando…» mientras llega la respuesta y «sin resultados» si llega
+          vacía.
+        </li>
+        <li>
+          Cambia <code>switchMap</code> por <code>concatMap</code> y escribe rápido: explica qué ves
+          y por qué.
+        </li>
+        <li>
+          Provoca un error (URL mal formada) y resuélvelo con <code>retry</code> +
+          <code>catchError</code>.
+        </li>
+      </ol>
+
+      <h2>Checklist de cierre</h2>
+      <ul class="check">
+        <li>Build y prettier limpios.</li>
+        <li>La búsqueda cancela la petición anterior al escribir más rápido que la red.</li>
+        <li>Ninguna suscripción manual sin <code>takeUntilDestroyed</code>.</li>
+        <li>Sabes explicar por qué <code>computed()</code> no sirve para esto.</li>
+      </ul>
+
+      <nav class="lesson-nav">
+        <a href="../04-quality/03-ssr.html"><span class="dir">Anterior</span>← 04-03 · SSR</a>
+        <a href="02-websockets.html"><span class="dir">Siguiente</span>02 · WebSockets →</a>
+      </nav>
+    </main>
+    <script src="../assets/theme.js"></script>
+  </body>
+</html>
