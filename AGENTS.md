@@ -4,7 +4,8 @@ Repo personal para aprender Angular con ejercicios pequeños. Un único workspac
 
 ## Reglas duras
 
-- **Nunca npm ni yarn.** Todo con `pnpm` (`pnpm install`, `pnpm exec ng ...`). Si una guía o tutorial dice `npm`, tradúcelo.
+- **Nunca npm ni yarn.** Instala con `pnpm` y ejecuta la CLI de Angular con `ng`: `pnpm install`, `ng serve <proyecto>`, `ng build <proyecto>`. Si una guía o tutorial dice `npm`, tradúcelo.
+- **Los ejemplos y la documentación escriben `ng` a secas** (CLI global). `pnpm exec ng ...` es la alternativa para fijar la versión del workspace; no la uses en ejemplos nuevos.
 - **Nunca `ng new` dentro del repo.** El workspace ya existe. Para añadir un ejercicio se usa `ng generate application` (skill `new-angular-exercise`).
 - **Una sola instalación de dependencias.** No crear `package.json`, `node_modules` ni lockfiles dentro de `chapters/*/*`.
 - **No añadir dependencias** sin pedirlo antes. Si hace falta, justificar y usar `pnpm add`.
@@ -52,9 +53,9 @@ El nombre del proyecto no puede llevar `/`. Las carpetas se nombran **siempre en
 
 ## Verificación antes de dar algo por terminado
 
-1. `pnpm exec ng build <proyecto>` compila sin errores.
+1. `ng build <proyecto>` compila sin errores.
 2. `pnpm exec prettier --check <rutas tocadas>` (o `--write` si toca formatear).
-3. Si el ejercicio es de routing o formularios, `pnpm exec ng serve <proyecto>` arranca sin errores.
+3. Si el ejercicio es de routing o formularios, `ng serve <proyecto>` arranca sin errores.
 4. Actualiza la tabla de progreso del `README.md` si cambió el estado del ejercicio.
 
 No digas que algo funciona sin haber ejecutado el build.
