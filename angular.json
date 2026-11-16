@@ -5,5 +5,91 @@
     "packageManager": "pnpm"
   },
   "newProjectRoot": "chapters",
-  "projects": {}
+  "projects": {
+    "ch01-01-hello-world": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "inlineTemplate": true,
+          "inlineStyle": true,
+          "skipTests": true
+        },
+        "@schematics/angular:class": {
+          "skipTests": true
+        },
+        "@schematics/angular:directive": {
+          "skipTests": true
+        },
+        "@schematics/angular:guard": {
+          "skipTests": true
+        },
+        "@schematics/angular:interceptor": {
+          "skipTests": true
+        },
+        "@schematics/angular:pipe": {
+          "skipTests": true
+        },
+        "@schematics/angular:resolver": {
+          "skipTests": true
+        },
+        "@schematics/angular:service": {
+          "skipTests": true
+        }
+      },
+      "root": "chapters/01-fundamentals/01-hello-world",
+      "sourceRoot": "chapters/01-fundamentals/01-hello-world/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "chapters/01-fundamentals/01-hello-world/src/main.ts",
+            "tsConfig": "chapters/01-fundamentals/01-hello-world/tsconfig.app.json",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "chapters/01-fundamentals/01-hello-world/public"
+              }
+            ],
+            "styles": ["chapters/01-fundamentals/01-hello-world/src/styles.css"]
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "ch01-01-hello-world:build:production"
+            },
+            "development": {
+              "buildTarget": "ch01-01-hello-world:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        }
+      }
+    }
+  }
 }

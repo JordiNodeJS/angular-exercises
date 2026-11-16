@@ -85,7 +85,7 @@ pnpm exec ng serve ch01-01-hello-world
 
 | Chapter          | Exercise          | Status      |
 | ---------------- | ----------------- | ----------- |
-| 01-fundamentals  | 01-hello-world    | Not started |
+| 01-fundamentals  | 01-hello-world    | In progress |
 | 01-fundamentals  | 02-templates      | Not started |
 | 01-fundamentals  | 03-control-flow   | Not started |
 | 01-fundamentals  | 04-pipes          | Not started |
